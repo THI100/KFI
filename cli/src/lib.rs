@@ -1,14 +1,36 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+pub enum Commands {
+    Add(AddArgs),
+    Save(SaveArgs),
+    Encrypt(EcArgs),
+    Log(LogArgs),
+    Drop,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// Arguments
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+pub struct AddArgs {
+    pub all: bool,
+    pub files: Option<Vec<String>>,
 }
+
+pub struct SaveArgs {
+    pub message: String,
+    pub primative: String,
+    pub flags: Option<Vec<String>>,
+}
+
+pub struct EcArgs {
+    pub method: String,
+}
+
+pub struct LogArgs {
+    pub size: u8,
+    pub filters: Option<Vec<String>>,
+}
+
+// pub fn parse<I>(args: I) -> Result<Command, CliError>
+// where
+//     I: IntoIterator,
+// {
+
+// }
