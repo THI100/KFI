@@ -1,4 +1,4 @@
-use crate::models::{self, AddArgs, InitArgs};
+use crate::models::{self, AddArgs, InitArgs, RemArgs, SaveArgs, StatArgs};
 use std::path::PathBuf;
 
 type Tokens<'a> = std::str::SplitWhitespace<'a>;
@@ -20,12 +20,47 @@ pub fn parse_add(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     while let Some(arg) = parts.next() {
         match arg {
             "--all" | "-a" => all = true,
-            file => files.push(file.into()),
+            file => files.push(PathBuf::from(file)),
         }
     }
 
     Ok(models::Commands::Add(AddArgs {
         all,
         files: if files.is_empty() { None } else { Some(files) },
+    }))
+}
+
+pub fn parse_remove(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let mut files = Vec::new();
+
+    while let Some(file) = parts.next() {
+        files.push(PathBuf::from(file));
+    }
+
+    Ok(models::Commands::Remove(RemArgs { files: files }))
+}
+
+pub fn parse_status(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let save = parts.next().ok_or("Missing save")?;
+
+    Ok(models::Commands::Status(StatArgs { save: save.into() }))
+}
+
+pub fn parse_save(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let message = parts.next().ok_or("Missing message")?;
+    let primitive = parts
+        .next()
+        .ok_or("Missing primitive parameter")?
+        .parse::<models::HashAlgo>()?;
+    let mut flags = Vec::new();
+
+    while let Some(flag) = parts.next() {
+        flags.push(flag.into());
+    }
+
+    Ok(models::Commands::Save(SaveArgs {
+        message: message.into(),
+        primitive: primitive,
+        flags: if flags.is_empty() { None } else { Some(flags) },
     }))
 }

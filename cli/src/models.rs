@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::str::FromStr;
 
 // ---------- Enums ---------- \\
 
@@ -26,6 +27,19 @@ pub enum HashAlgo {
     Blake3,
     Kaurea,
     Sha3,
+}
+
+impl FromStr for HashAlgo {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_ascii_lowercase().as_str() {
+            "blake3" => Ok(HashAlgo::Blake3),
+            "kaurea" => Ok(HashAlgo::Kaurea),
+            "sha3" => Ok(HashAlgo::Sha3),
+            _ => Err("Unknown hash algorithm"),
+        }
+    }
 }
 
 #[derive(Debug)]
