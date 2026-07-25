@@ -175,3 +175,28 @@ pub struct FuseArgs {
     pub branch2: String,
     pub flags: Option<Vec<String>>,
 }
+
+// ---------- Enums for flags ---------- \\
+
+pub enum FuseFlags {
+    ByPass,
+    InteruptionForSave,
+    Abort,
+}
+
+pub enum BranchFlags {
+    Delete,
+    New,
+}
+
+pub enum LogFilters {
+    AlphabeticOrder,
+    TimeOrder,
+    OnlyEncypted,
+    OnlyCompacted,
+}
+
+pub enum SaveFlags {
+    AllowEmpty,
+    Sign,
+}
