@@ -1,6 +1,6 @@
 use crate::models::{
-    self, AddArgs, ChangeArgs, CompArgs, DelArgs, DissArgs, EcArgs, InitArgs, LogArgs, RemArgs,
-    RevArgs, SaveArgs, StatArgs,
+    self, AddArgs, BranchArgs, ChOutArgs, ChangeArgs, CompArgs, DelArgs, DissArgs, EcArgs,
+    FuseArgs, InitArgs, LogArgs, RemArgs, RevArgs, SaveArgs, StatArgs,
 };
 use std::path::PathBuf;
 
@@ -63,7 +63,7 @@ pub fn parse_add(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     }
 
     Ok(models::Commands::Add(AddArgs {
-        all,
+        all: all,
         files: if files.is_empty() { None } else { Some(files) },
     }))
 }
@@ -122,7 +122,10 @@ pub fn parse_compact(mut parts: Tokens<'_>) -> Result<models::Commands, String> 
         }
     }
 
-    Ok(models::Commands::Compact(CompArgs { all, save }))
+    Ok(models::Commands::Compact(CompArgs {
+        all: all,
+        save: save,
+    }))
 }
 
 pub fn parse_encrypt(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
@@ -151,11 +154,11 @@ pub fn parse_encrypt(mut parts: Tokens<'_>) -> Result<models::Commands, String> 
     let apply_ps: Vec<PathBuf> = parts.map(PathBuf::from).collect();
 
     Ok(models::Commands::Encrypt(EcArgs {
-        otype,
-        id,
-        method,
-        plus_security,
-        key,
+        otype: otype,
+        id: id,
+        method: method,
+        plus_security: plus_security,
+        key: key,
         apply_ps: if apply_ps.is_empty() {
             None
         } else {
@@ -204,5 +207,33 @@ pub fn parse_delete(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
 
     Ok(models::Commands::Delete(DelArgs {
         vault: vault.into(),
+    }))
+}
+
+pub fn parse_branch(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let branch = parts.next().ok_or("Missing branch")?.into();
+    let flag = parts.next().map(String::from);
+
+    Ok(models::Commands::Branch(BranchArgs {
+        branch: branch,
+        flag: flag,
+    }))
+}
+
+pub fn parse_checkout(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let branch = parts.next().ok_or("Missing branch")?.into();
+
+    Ok(models::Commands::Checkout(ChOutArgs { branch: branch }))
+}
+
+pub fn parse_fuse(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let trunk_branch = parts.next().ok_or("Missing trunk branch")?.into();
+    let feeder_branch = parts.next().ok_or("Missing feeder branch")?.into();
+    let flags: Vec<String> = parts.map(String::from).collect();
+
+    Ok(models::Commands::Fuse(FuseArgs {
+        branch1: trunk_branch,
+        branch2: feeder_branch,
+        flags: if flags.is_empty() { None } else { Some(flags) },
     }))
 }
