@@ -1,5 +1,6 @@
 use crate::models::{
-    self, AddArgs, CompArgs, DissArgs, EcArgs, InitArgs, RemArgs, SaveArgs, StatArgs,
+    self, AddArgs, ChangeArgs, CompArgs, DelArgs, DissArgs, EcArgs, InitArgs, LogArgs, RemArgs,
+    RevArgs, SaveArgs, StatArgs,
 };
 use std::path::PathBuf;
 
@@ -98,25 +99,68 @@ pub fn parse_encrypt(mut parts: Tokens<'_>) -> Result<models::Commands, String> 
         .parse::<models::EncryptionMethod>()
         .map_err(|e| e.to_string())?;
 
-    let key = parts.next().map(String::from);
-
     let plus_security = parts
         .next()
         .ok_or("Missing plus_security parameter")?
         .parse::<bool>()
         .map_err(|_| "plus_security must be 'true' or 'false'".to_string())?;
 
+    let key = parts.next().map(String::from);
+
     let apply_ps: Vec<PathBuf> = parts.map(PathBuf::from).collect();
 
     Ok(models::Commands::Encrypt(EcArgs {
         save,
         method,
-        key,
         plus_security,
+        key,
         apply_ps: if apply_ps.is_empty() {
             None
         } else {
             Some(apply_ps)
         },
+    }))
+}
+
+pub fn parse_log(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let count_in_str = parts.next().ok_or("Missing count")?;
+
+    let count = count_in_str.parse::<u8>().unwrap();
+
+    let filters: Vec<String> = parts.map(String::from).collect();
+
+    Ok(models::Commands::Log(LogArgs {
+        count: count,
+        filters: if filters.is_empty() {
+            None
+        } else {
+            Some(filters)
+        },
+    }))
+}
+
+pub fn parse_revert(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let save = parts.next().ok_or("Missing save")?;
+    let file = parts.next().map(PathBuf::from);
+
+    Ok(models::Commands::Revert(RevArgs {
+        save: save.into(),
+        file: file,
+    }))
+}
+
+pub fn parse_change(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let vault = parts.next().ok_or("Missing vault")?;
+
+    Ok(models::Commands::Change(ChangeArgs {
+        vault: vault.into(),
+    }))
+}
+
+pub fn parse_delete(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let vault = parts.next().ok_or("Missing vault")?;
+
+    Ok(models::Commands::Delete(DelArgs {
+        vault: vault.into(),
     }))
 }

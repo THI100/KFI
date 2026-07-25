@@ -34,9 +34,9 @@ impl FromStr for HashAlgo {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_ascii_lowercase().as_str() {
-            "blake3" => Ok(HashAlgo::Blake3),
+            "blake3" | "blake" => Ok(HashAlgo::Blake3),
             "kaurea" => Ok(HashAlgo::Kaurea),
-            "sha3" => Ok(HashAlgo::Sha3),
+            "sha3" | "sha" => Ok(HashAlgo::Sha3),
             _ => Err("Unknown hash algorithm"),
         }
     }
@@ -112,8 +112,8 @@ pub struct CompArgs {
 pub struct EcArgs {
     pub save: String,
     pub method: EncryptionMethod,
-    pub key: Option<String>, // Used with method, Automaticly is applied Argon2
     pub plus_security: bool, // Use Argon2 to hash special files, such as a .env or password file
+    pub key: Option<String>, // Used with method, Automaticly is applied Argon2
     pub apply_ps: Option<Vec<PathBuf>>, // Apply plus_security to those files
 }
 
