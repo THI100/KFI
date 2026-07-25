@@ -6,6 +6,41 @@ use std::path::PathBuf;
 
 type Tokens<'a> = std::str::SplitWhitespace<'a>;
 
+// ---------- Helper ---------- \\
+fn parse_quoted(parts: &mut Tokens<'_>) -> Option<String> {
+    let first = parts.next()?;
+
+    let quote_char = match first.chars().next() {
+        Some(c @ ('"' | '\'')) => c,
+        _ => return Some(first.to_string()), // Not quoted, return as-is
+    };
+
+    // Remove the opening
+    let mut reconstructed = first[1..].to_string();
+
+    // If it already ends strip quotes and return
+    if reconstructed.ends_with(quote_char) && reconstructed.len() >= 1 {
+        reconstructed.pop();
+        return Some(reconstructed);
+    }
+
+    // Keep consuming tokens until it is found the closing quote
+    while let Some(next_token) = parts.next() {
+        reconstructed.push(' ');
+
+        if let Some(stripped) = next_token.strip_suffix(quote_char) {
+            reconstructed.push_str(stripped);
+            return Some(reconstructed);
+        } else {
+            reconstructed.push_str(next_token);
+        }
+    }
+
+    // return what we accumulated, in case of not finding a quote: Crtical Behavior
+    Some(reconstructed)
+}
+
+// ---------- Parsers ---------- \\
 pub fn parse_init(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let vault = parts.next().ok_or("Missing vault name")?;
     let loc = parts.next().ok_or("Missing Path")?;
@@ -50,7 +85,7 @@ pub fn parse_status(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
 }
 
 pub fn parse_save(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
-    let message = parts.next().ok_or("Missing message")?;
+    let message = parse_quoted(&mut parts).ok_or("Missing message")?;
     let primitive = parts
         .next()
         .ok_or("Missing primitive parameter")?
