@@ -93,7 +93,7 @@ pub fn parse_save(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let mut flags = Vec::new();
 
     while let Some(flag) = parts.next() {
-        flags.push(flag.into());
+        flags.push(flag.parse::<models::SaveFlags>()?);
     }
 
     Ok(models::Commands::Save(SaveArgs {
@@ -172,7 +172,11 @@ pub fn parse_log(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
 
     let count = count_in_str.parse::<u8>().unwrap();
 
-    let filters: Vec<String> = parts.map(String::from).collect();
+    let mut filters = Vec::new();
+
+    while let Some(filter) = parts.next() {
+        filters.push(filter.parse::<models::LogFilters>()?);
+    }
 
     Ok(models::Commands::Log(LogArgs {
         count: count,
@@ -212,7 +216,7 @@ pub fn parse_delete(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
 
 pub fn parse_branch(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let branch = parts.next().ok_or("Missing branch")?.into();
-    let flag = parts.next().map(String::from);
+    let flag: Option<models::BranchFlags> = parts.next().map(|s| s.parse()).transpose()?;
 
     Ok(models::Commands::Branch(BranchArgs {
         branch: branch,
@@ -229,7 +233,11 @@ pub fn parse_checkout(mut parts: Tokens<'_>) -> Result<models::Commands, String>
 pub fn parse_fuse(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let trunk_branch = parts.next().ok_or("Missing trunk branch")?.into();
     let feeder_branch = parts.next().ok_or("Missing feeder branch")?.into();
-    let flags: Vec<String> = parts.map(String::from).collect();
+    let mut flags = Vec::new();
+
+    while let Some(flag) = parts.next() {
+        flags.push(flag.parse::<models::FuseFlags>()?);
+    }
 
     Ok(models::Commands::Fuse(FuseArgs {
         branch1: trunk_branch,

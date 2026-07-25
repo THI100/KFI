@@ -112,7 +112,7 @@ pub struct StatArgs {
 pub struct SaveArgs {
     pub message: String,
     pub primitive: HashAlgo,
-    pub flags: Option<Vec<String>>,
+    pub flags: Option<Vec<SaveFlags>>,
 }
 
 #[derive(Debug)]
@@ -139,7 +139,7 @@ pub struct EcArgs {
 #[derive(Debug)]
 pub struct LogArgs {
     pub count: u8, // amount of saves that will be shown
-    pub filters: Option<Vec<String>>,
+    pub filters: Option<Vec<LogFilters>>,
 }
 
 #[derive(Debug)]
@@ -161,7 +161,7 @@ pub struct DelArgs {
 #[derive(Debug)]
 pub struct BranchArgs {
     pub branch: String,
-    pub flag: Option<String>,
+    pub flag: Option<BranchFlags>,
 }
 
 #[derive(Debug)]
@@ -173,22 +173,50 @@ pub struct ChOutArgs {
 pub struct FuseArgs {
     pub branch1: String,
     pub branch2: String,
-    pub flags: Option<Vec<String>>,
+    pub flags: Option<Vec<FuseFlags>>,
 }
 
 // ---------- Enums for flags ---------- \\
 
+#[derive(Debug)]
 pub enum FuseFlags {
     ByPass,
     InteruptionForSave,
     Abort,
 }
 
+impl FromStr for FuseFlags {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_ascii_lowercase().as_str() {
+            "-bp" | "--by-pass" => Ok(FuseFlags::ByPass),
+            "-i" | "--interupt" | "--manual-inspect" => Ok(FuseFlags::InteruptionForSave),
+            "--abort" => Ok(FuseFlags::Abort),
+            _ => Err("Unknown Internal Object"),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub enum BranchFlags {
     Delete,
     New,
 }
 
+impl FromStr for BranchFlags {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_ascii_lowercase().as_str() {
+            "-d" | "--delete" | "--del" => Ok(BranchFlags::Delete),
+            "-n" | "--new" => Ok(BranchFlags::New),
+            _ => Err("Unknown Internal Object"),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub enum LogFilters {
     AlphabeticOrder,
     TimeOrder,
@@ -196,7 +224,34 @@ pub enum LogFilters {
     OnlyCompacted,
 }
 
+impl FromStr for LogFilters {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_ascii_lowercase().as_str() {
+            "--alphabetic" | "-ao" | "-abc" => Ok(LogFilters::AlphabeticOrder),
+            "-oc" | "--only-compacted" => Ok(LogFilters::OnlyCompacted),
+            "-oe" | "--only-encrypted" => Ok(LogFilters::OnlyEncypted),
+            "--time" | "-to" => Ok(LogFilters::TimeOrder),
+            _ => Err("Unknown Internal Object"),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub enum SaveFlags {
     AllowEmpty,
     Sign,
+}
+
+impl FromStr for SaveFlags {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_ascii_lowercase().as_str() {
+            "--allow-empty" | "-ae" => Ok(SaveFlags::AllowEmpty),
+            "--sign" | "-s" => Ok(SaveFlags::Sign),
+            _ => Err("Unknown Internal Object"),
+        }
+    }
 }
