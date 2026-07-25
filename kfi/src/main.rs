@@ -14,7 +14,7 @@ mod tests {
             ("save 'laga vaken' Blake3 --noopt", true),
             ("discard #faodpvs3053254135..", true),
             ("comp -a", true),
-            ("Encrypt #faodpvs3053254135.. aes false", true),
+            ("Encrypt save #faodpvs3053254135.. aes false", true),
             ("log 2", true),
             ("revert #ksafd2141254135..", true),
             ("Change fanf", true),

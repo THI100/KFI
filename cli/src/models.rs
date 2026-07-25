@@ -12,7 +12,7 @@ pub enum Commands {
     Save(SaveArgs),      // Save the actual Added files
     Discard(DissArgs),   // Delete a certain save
     Compact(CompArgs),   // Compact a certain save to .zip or the whole Vault
-    Encrypt(EcArgs),     // Encrypt a certain save and its contents
+    Encrypt(EcArgs),     // Encrypt a certain save or vault and its contents
     Log(LogArgs),        // Gives the history of saves
     Revert(RevArgs),     // Revert to a certain save or file and delete history (only for the file).
     Change(ChangeArgs),  // Changes to another Vault
@@ -61,7 +61,25 @@ impl FromStr for EncryptionMethod {
                 Ok(EncryptionMethod::ChaCha20Poly1305)
             }
             "aesgcm" => Ok(EncryptionMethod::AesGcm),
-            _ => Err("Unknown hash algorithm"),
+            _ => Err("Unknown Encryption algorithm"),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum InternalObject {
+    Vault,
+    Save,
+}
+
+impl FromStr for InternalObject {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_ascii_lowercase().as_str() {
+            "vault" => Ok(InternalObject::Vault),
+            "save" | "commit" => Ok(InternalObject::Save),
+            _ => Err("Unknown Internal Object"),
         }
     }
 }
@@ -110,7 +128,8 @@ pub struct CompArgs {
 
 #[derive(Debug)]
 pub struct EcArgs {
-    pub save: String,
+    pub otype: InternalObject,
+    pub id: String,
     pub method: EncryptionMethod,
     pub plus_security: bool, // Use Argon2 to hash special files, such as a .env or password file
     pub key: Option<String>, // Used with method, Automaticly is applied Argon2

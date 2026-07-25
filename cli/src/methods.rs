@@ -126,7 +126,13 @@ pub fn parse_compact(mut parts: Tokens<'_>) -> Result<models::Commands, String> 
 }
 
 pub fn parse_encrypt(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
-    let save = parts.next().ok_or("Missing save parameter")?.to_string();
+    let otype = parts
+        .next()
+        .ok_or("Missing method parameter")?
+        .parse::<models::InternalObject>()
+        .map_err(|e| e.to_string())?;
+
+    let id = parts.next().ok_or("Missing save parameter")?.to_string();
 
     let method = parts
         .next()
@@ -145,7 +151,8 @@ pub fn parse_encrypt(mut parts: Tokens<'_>) -> Result<models::Commands, String> 
     let apply_ps: Vec<PathBuf> = parts.map(PathBuf::from).collect();
 
     Ok(models::Commands::Encrypt(EcArgs {
-        save,
+        otype,
+        id,
         method,
         plus_security,
         key,
