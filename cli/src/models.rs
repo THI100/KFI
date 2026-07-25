@@ -50,6 +50,22 @@ pub enum EncryptionMethod {
     AesGcm,
 }
 
+impl FromStr for EncryptionMethod {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_ascii_lowercase().as_str() {
+            "aes" => Ok(EncryptionMethod::Aes),
+            "chacha" | "chacha20" => Ok(EncryptionMethod::ChaCha20),
+            "chachapoly" | "chacha20poly" | "chacha20poly1305" => {
+                Ok(EncryptionMethod::ChaCha20Poly1305)
+            }
+            "aesgcm" => Ok(EncryptionMethod::AesGcm),
+            _ => Err("Unknown hash algorithm"),
+        }
+    }
+}
+
 // ---------- Arguments ---------- \\
 
 #[derive(Debug)]

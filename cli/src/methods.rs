@@ -1,4 +1,6 @@
-use crate::models::{self, AddArgs, InitArgs, RemArgs, SaveArgs, StatArgs};
+use crate::models::{
+    self, AddArgs, CompArgs, DissArgs, EcArgs, InitArgs, RemArgs, SaveArgs, StatArgs,
+};
 use std::path::PathBuf;
 
 type Tokens<'a> = std::str::SplitWhitespace<'a>;
@@ -62,5 +64,59 @@ pub fn parse_save(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
         message: message.into(),
         primitive: primitive,
         flags: if flags.is_empty() { None } else { Some(flags) },
+    }))
+}
+
+pub fn parse_discard(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let save = parts.next().ok_or("Missing save")?;
+
+    Ok(models::Commands::Discard(DissArgs { save: save.into() }))
+}
+
+pub fn parse_compact(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let mut all = false;
+    let mut save = None;
+
+    if let Some(arg) = parts.next() {
+        if arg == "-a" || arg == "--all" || arg == "." {
+            all = true;
+            save = parts.next().map(String::from);
+        } else {
+            save = Some(arg.to_string());
+        }
+    }
+
+    Ok(models::Commands::Compact(CompArgs { all, save }))
+}
+
+pub fn parse_encrypt(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let save = parts.next().ok_or("Missing save parameter")?.to_string();
+
+    let method = parts
+        .next()
+        .ok_or("Missing method parameter")?
+        .parse::<models::EncryptionMethod>()
+        .map_err(|e| e.to_string())?;
+
+    let key = parts.next().map(String::from);
+
+    let plus_security = parts
+        .next()
+        .ok_or("Missing plus_security parameter")?
+        .parse::<bool>()
+        .map_err(|_| "plus_security must be 'true' or 'false'".to_string())?;
+
+    let apply_ps: Vec<PathBuf> = parts.map(PathBuf::from).collect();
+
+    Ok(models::Commands::Encrypt(EcArgs {
+        save,
+        method,
+        key,
+        plus_security,
+        apply_ps: if apply_ps.is_empty() {
+            None
+        } else {
+            Some(apply_ps)
+        },
     }))
 }
