@@ -40,10 +40,20 @@ fn parse_quoted(parts: &mut Tokens<'_>) -> Option<String> {
     Some(reconstructed)
 }
 
+fn unexpected_argument(command: &str, parts: &mut Tokens<'_>) -> Result<(), String> {
+    if let Some(arg) = parts.next() {
+        Err(format!("{}: unexpected argument '{}'", command, arg))
+    } else {
+        Ok(())
+    }
+}
+
 // ---------- Parsers ---------- \\
 pub fn parse_init(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let vault = parts.next().ok_or("Missing vault name")?;
     let loc = parts.next().ok_or("Missing Path")?;
+
+    unexpected_argument("init", &mut parts)?;
 
     Ok(models::Commands::Init(InitArgs {
         vault: vault.to_string(),
@@ -81,6 +91,8 @@ pub fn parse_remove(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
 pub fn parse_status(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let save = parts.next().ok_or("Missing save")?;
 
+    unexpected_argument("status", &mut parts)?;
+
     Ok(models::Commands::Status(StatArgs { save: save.into() }))
 }
 
@@ -105,6 +117,8 @@ pub fn parse_save(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
 
 pub fn parse_discard(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let save = parts.next().ok_or("Missing save")?;
+
+    unexpected_argument("discard", &mut parts)?;
 
     Ok(models::Commands::Discard(DissArgs { save: save.into() }))
 }
@@ -192,6 +206,8 @@ pub fn parse_revert(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let save = parts.next().ok_or("Missing save")?;
     let file = parts.next().map(PathBuf::from);
 
+    unexpected_argument("revert", &mut parts)?;
+
     Ok(models::Commands::Revert(RevArgs {
         save: save.into(),
         file: file,
@@ -201,6 +217,8 @@ pub fn parse_revert(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
 pub fn parse_change(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let vault = parts.next().ok_or("Missing vault")?;
 
+    unexpected_argument("change", &mut parts)?;
+
     Ok(models::Commands::Change(ChangeArgs {
         vault: vault.into(),
     }))
@@ -208,6 +226,8 @@ pub fn parse_change(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
 
 pub fn parse_delete(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let vault = parts.next().ok_or("Missing vault")?;
+
+    unexpected_argument("delete", &mut parts)?;
 
     Ok(models::Commands::Delete(DelArgs {
         vault: vault.into(),
@@ -218,6 +238,8 @@ pub fn parse_branch(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let branch = parts.next().ok_or("Missing branch")?.into();
     let flag: Option<models::BranchFlags> = parts.next().map(|s| s.parse()).transpose()?;
 
+    unexpected_argument("branch", &mut parts)?;
+
     Ok(models::Commands::Branch(BranchArgs {
         branch: branch,
         flag: flag,
@@ -226,6 +248,8 @@ pub fn parse_branch(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
 
 pub fn parse_checkout(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let branch = parts.next().ok_or("Missing branch")?.into();
+
+    unexpected_argument("checkout", &mut parts)?;
 
     Ok(models::Commands::Checkout(ChOutArgs { branch: branch }))
 }

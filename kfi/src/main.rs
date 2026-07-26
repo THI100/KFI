@@ -7,7 +7,7 @@ mod tests {
             ("add -a file3 file2", true),
             ("remove file3 file2", true),
             ("Status #faodpvs3053254135..", true),
-            ("save 'laga vaken' Blake3 --noopt", true),
+            ("save 'laga vaken' Blake3 --sign", true),
             ("discard #faodpvs3053254135..", true),
             ("comp -a", true),
             ("Encrypt save #faodpvs3053254135.. aes false", true),
