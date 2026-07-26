@@ -184,7 +184,9 @@ pub fn parse_encrypt(mut parts: Tokens<'_>) -> Result<models::Commands, String> 
 pub fn parse_log(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let count_in_str = parts.next().ok_or("Missing count")?;
 
-    let count = count_in_str.parse::<u8>().unwrap();
+    let count = count_in_str
+        .parse::<u8>()
+        .map_err(|_| "Count must be a number between 0 and 255")?;
 
     let mut filters = Vec::new();
 

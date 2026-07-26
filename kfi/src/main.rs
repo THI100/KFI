@@ -15,7 +15,9 @@ mod tests {
             ("revert #ksafd2141254135..", true),
             ("Change fanf", true),
             ("Del mac", true),
-            ("merge a", false),
+            ("branch a -N", true),
+            ("checkout b", true),
+            ("fuse a b -i", true),
             ("monkeysssssss", false),
         ];
 
