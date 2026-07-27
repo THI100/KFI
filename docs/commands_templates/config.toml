@@ -1,0 +1,11 @@
+name = "MyVault"
+version = 1
+
+[hash]
+algorithm = "sha256"
+
+[encryption]
+enabled = false
+
+[compression]
+enabled = false

@@ -14,7 +14,6 @@ pub enum Commands {
     Compact(CompArgs),   // Compact a certain save to .zip or the whole Vault
     Encrypt(EcArgs),     // Encrypt a certain save or vault and its contents
     Log(LogArgs),        // Gives the history of saves
-    Revert(RevArgs),     // Revert to a certain save or file and delete history (only for the file).
     Change(ChangeArgs),  // Changes to another Vault
     Delete(DelArgs),     // Delete the Vault
     Branch(BranchArgs),  // Create or delete a Vault branch
@@ -70,6 +69,8 @@ impl FromStr for EncryptionMethod {
 pub enum InternalObject {
     Vault,
     Save,
+    Tree,
+    File,
 }
 
 impl FromStr for InternalObject {
@@ -140,12 +141,6 @@ pub struct EcArgs {
 pub struct LogArgs {
     pub count: u8, // amount of saves that will be shown
     pub filters: Option<Vec<LogFilters>>,
-}
-
-#[derive(Debug)]
-pub struct RevArgs {
-    pub save: String,
-    pub file: Option<PathBuf>,
 }
 
 #[derive(Debug)]

@@ -1,6 +1,6 @@
 use crate::models::{
     self, AddArgs, BranchArgs, ChOutArgs, ChangeArgs, CompArgs, DelArgs, DissArgs, EcArgs,
-    FuseArgs, InitArgs, LogArgs, RemArgs, RevArgs, SaveArgs, StatArgs,
+    FuseArgs, InitArgs, LogArgs, RemArgs, SaveArgs, StatArgs,
 };
 use std::path::PathBuf;
 
@@ -201,18 +201,6 @@ pub fn parse_log(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
         } else {
             Some(filters)
         },
-    }))
-}
-
-pub fn parse_revert(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
-    let save = parts.next().ok_or("Missing save")?;
-    let file = parts.next().map(PathBuf::from);
-
-    unexpected_argument("revert", &mut parts)?;
-
-    Ok(models::Commands::Revert(RevArgs {
-        save: save.into(),
-        file: file,
     }))
 }
 

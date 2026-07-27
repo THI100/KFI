@@ -23,7 +23,6 @@ pub fn parse<T: AsRef<str>>(req: T) -> Result<Commands, String> {
         "compact" | "comp" => methods::parse_compact(parts),
         "encrypt" => methods::parse_encrypt(parts),
         "log" => methods::parse_log(parts),
-        "revert" => methods::parse_revert(parts),
         "change" | "switch" => methods::parse_change(parts),
         "delete" | "del" => methods::parse_delete(parts),
         "branch" => methods::parse_branch(parts),
