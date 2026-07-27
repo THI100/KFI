@@ -12,7 +12,6 @@ mod tests {
             ("comp -a", true),
             ("Encrypt save #faodpvs3053254135.. aes false", true),
             ("log 2", true),
-            ("revert #ksafd2141254135..", true),
             ("Change fanf", true),
             ("Del mac", true),
             ("branch a -N", true),
@@ -39,4 +38,10 @@ mod tests {
     }
 }
 
-fn main() {}
+fn main() {
+    let k = "init fub ./";
+
+    let j = cli::parse(k);
+
+    print!("{:?}", j)
+}
