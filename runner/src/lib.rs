@@ -1,3 +1,7 @@
+mod branch;
+mod infra;
+mod registry;
+mod safety;
 use cli::models::Commands;
 
 pub fn dispatch(command: Commands) {
