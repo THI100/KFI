@@ -1,3 +1,9 @@
+use std::env;
+use std::io::{self, Write};
+
+use cli;
+use runner;
+
 #[cfg(test)]
 mod tests {
     #[test]
@@ -38,17 +44,9 @@ mod tests {
     }
 }
 
-use std::env;
-use std::io::{self, Write};
-
-use cli;
-use runner;
-
 fn main() {
-    // Skip argv[0] (the executable name)
     let args: Vec<String> = env::args().skip(1).collect();
 
-    // CLI mode
     if !args.is_empty() {
         let input = args.join(" ");
 
@@ -67,7 +65,7 @@ fn main() {
     let stdin = io::stdin();
 
     loop {
-        print!("> ");
+        print!("\n> ");
         io::stdout().flush().unwrap();
 
         let mut line = String::new();
