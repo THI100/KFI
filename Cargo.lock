@@ -11,8 +11,12 @@ name = "kfi"
 version = "0.0.1"
 dependencies = [
  "cli",
+ "runner",
 ]
 
 [[package]]
 name = "runner"
 version = "0.0.1"
+dependencies = [
+ "cli",
+]

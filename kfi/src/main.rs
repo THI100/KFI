@@ -38,10 +38,58 @@ mod tests {
     }
 }
 
+use std::env;
+use std::io::{self, Write};
+
+use cli;
+use runner;
+
 fn main() {
-    let k = "init fub ./";
+    // Skip argv[0] (the executable name)
+    let args: Vec<String> = env::args().skip(1).collect();
 
-    let j = cli::parse(k);
+    // CLI mode
+    if !args.is_empty() {
+        let input = args.join(" ");
 
-    print!("{:?}", j)
+        match cli::parse(&input) {
+            Ok(command) => runner::dispatch(command),
+            Err(err) => eprintln!("Error: {err}"),
+        }
+
+        return;
+    }
+
+    // Interactive mode
+    println!("KFI Interactive Mode");
+    println!("Type 'exit' or 'quit' to leave.\n");
+
+    let stdin = io::stdin();
+
+    loop {
+        print!("> ");
+        io::stdout().flush().unwrap();
+
+        let mut line = String::new();
+
+        if stdin.read_line(&mut line).is_err() {
+            eprintln!("Failed to read input.");
+            continue;
+        }
+
+        let line = line.trim();
+
+        if line.is_empty() {
+            continue;
+        }
+
+        if matches!(line, "exit" | "quit") {
+            break;
+        }
+
+        match cli::parse(line) {
+            Ok(command) => runner::dispatch(command),
+            Err(err) => eprintln!("Error: {err}"),
+        }
+    }
 }
