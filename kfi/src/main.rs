@@ -18,10 +18,10 @@ mod tests {
             ("comp -a", true),
             ("Encrypt save #faodpvs3053254135.. aes false", true),
             ("log 2", true),
-            ("Change fanf", true),
-            ("Del mac", true),
+            ("Open fanf", true),
+            ("Destroy mac", true),
             ("branch a -N", true),
-            ("checkout b", true),
+            ("switch b", true),
             ("fuse a b -i", true),
             ("monkeysssssss", false),
         ];

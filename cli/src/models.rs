@@ -5,20 +5,31 @@ use std::str::FromStr;
 
 #[derive(Debug)]
 pub enum Commands {
-    Init(InitArgs),      // Starts a new Vault of a certain folder
-    Add(AddArgs),        // Add new files to track
-    Remove(RemArgs),     // Remove tracked files
-    Status(StatArgs),    // Get the atual status of the save
-    Save(SaveArgs),      // Save the actual Added files
-    Discard(DissArgs),   // Delete a certain save
-    Compact(CompArgs),   // Compact a certain save to .zip or the whole Vault
-    Encrypt(EcArgs),     // Encrypt a certain save or vault and its contents
-    Log(LogArgs),        // Gives the history of saves
-    Change(ChangeArgs),  // Changes to another Vault
-    Delete(DelArgs),     // Delete the Vault
-    Branch(BranchArgs),  // Create or delete a Vault branch
-    Checkout(ChOutArgs), // Changes between branches
-    Fuse(FuseArgs),      // Fuse two branches together
+    // Vault Management
+    Init(InitArgs),   // Create a new Vault in a folder
+    Open(OpenArgs),   // Open an existing Vault
+    Clone(CloneArgs), // Create a copy of a Vault
+    Destroy(DesArgs), // Permanently remove a Vault
+    // File Tracking
+    Add(AddArgs),     // Stage files for the next save
+    Remove(RemArgs),  // Untrack staged files
+    Status(StatArgs), // Show the current workspace status
+    Diff(DiffArgs),   // Compare files or saves
+    // Saves
+    Save(SaveArgs),    // Create an audited save
+    Restore(RestArgs), // Restore files from a previous save
+    Discard(DissArgs), // Remove an unaudited save
+    Log(LogArgs),      // List audited save history
+    Inspect(InsArgs),  // Show detailed information about a save
+    // Safety
+    Encrypt(EcArgs),   // Encrypt Vaults, saves, or selected contents
+    Compact(CompArgs), // Compress saves or the entire Vault
+    Verify(VerArgs),   // Verify snapshot integrity and blockchain health
+    Export(ExpArgs),   // Export a protected Vault archive
+    // Branching
+    Branch(BranchArgs), // Create or remove branches
+    Switch(SwitchArgs), // Change the active branch
+    Fuse(FuseArgs),     // Merge two branches
 }
 
 #[derive(Debug)]
@@ -144,12 +155,12 @@ pub struct LogArgs {
 }
 
 #[derive(Debug)]
-pub struct ChangeArgs {
+pub struct OpenArgs {
     pub vault: String,
 }
 
 #[derive(Debug)]
-pub struct DelArgs {
+pub struct DesArgs {
     pub vault: String,
 }
 
@@ -160,7 +171,7 @@ pub struct BranchArgs {
 }
 
 #[derive(Debug)]
-pub struct ChOutArgs {
+pub struct SwitchArgs {
     pub branch: String,
 }
 

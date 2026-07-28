@@ -1,6 +1,6 @@
 use crate::models::{
-    self, AddArgs, BranchArgs, ChOutArgs, ChangeArgs, CompArgs, DelArgs, DissArgs, EcArgs,
-    FuseArgs, InitArgs, LogArgs, RemArgs, SaveArgs, StatArgs,
+    self, AddArgs, BranchArgs, CompArgs, DesArgs, DissArgs, EcArgs, FuseArgs, InitArgs, LogArgs,
+    OpenArgs, RemArgs, SaveArgs, StatArgs, SwitchArgs,
 };
 use std::path::PathBuf;
 
@@ -204,22 +204,22 @@ pub fn parse_log(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     }))
 }
 
-pub fn parse_change(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+pub fn parse_open(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let vault = parts.next().ok_or("Missing vault")?;
 
-    unexpected_argument("change", &mut parts)?;
+    unexpected_argument("open", &mut parts)?;
 
-    Ok(models::Commands::Change(ChangeArgs {
+    Ok(models::Commands::Open(OpenArgs {
         vault: vault.into(),
     }))
 }
 
-pub fn parse_delete(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+pub fn parse_destroy(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let vault = parts.next().ok_or("Missing vault")?;
 
-    unexpected_argument("delete", &mut parts)?;
+    unexpected_argument("destroy", &mut parts)?;
 
-    Ok(models::Commands::Delete(DelArgs {
+    Ok(models::Commands::Destroy(DesArgs {
         vault: vault.into(),
     }))
 }
@@ -236,12 +236,12 @@ pub fn parse_branch(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     }))
 }
 
-pub fn parse_checkout(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+pub fn parse_switch(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let branch = parts.next().ok_or("Missing branch")?.into();
 
-    unexpected_argument("checkout", &mut parts)?;
+    unexpected_argument("switch", &mut parts)?;
 
-    Ok(models::Commands::Checkout(ChOutArgs { branch: branch }))
+    Ok(models::Commands::Switch(SwitchArgs { branch: branch }))
 }
 
 pub fn parse_fuse(mut parts: Tokens<'_>) -> Result<models::Commands, String> {

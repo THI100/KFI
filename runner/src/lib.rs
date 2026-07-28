@@ -47,16 +47,16 @@ pub fn dispatch(command: Commands) {
             println!("Change: {args:#?}");
         }
 
-        Commands::Delete(args) => {
-            println!("Delete: {args:#?}");
+        Commands::Destroy(args) => {
+            println!("Destroy: {args:#?}");
         }
 
         Commands::Branch(args) => {
             println!("Branch: {args:#?}");
         }
 
-        Commands::Checkout(args) => {
-            println!("Checkout: {args:#?}");
+        Commands::Switch(args) => {
+            println!("Switch: {args:#?}");
         }
 
         Commands::Fuse(args) => {
