@@ -1,7 +1,3 @@
-mod branch;
-mod infra;
-mod registry;
-mod safety;
 use cli::models::Commands;
 
 pub fn dispatch(command: Commands) {
@@ -61,6 +57,30 @@ pub fn dispatch(command: Commands) {
 
         Commands::Fuse(args) => {
             println!("Fuse: {args:#?}");
+        }
+
+        Commands::Clone(args) => {
+            println!("Clone: {args:#?}");
+        }
+
+        Commands::Diff(args) => {
+            println!("Diff: {args:#?}");
+        }
+
+        Commands::Restore(args) => {
+            println!("Restore: {args:#?}");
+        }
+
+        Commands::Inspect(args) => {
+            println!("Inspect: {args:#?}");
+        }
+
+        Commands::Verify(args) => {
+            println!("Verify: {args:#?}");
+        }
+
+        Commands::Export(args) => {
+            println!("Export: {args:#?}");
         }
     }
 }

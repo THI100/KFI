@@ -28,6 +28,12 @@ pub fn parse<T: AsRef<str>>(req: T) -> Result<Commands, String> {
         "branch" => methods::parse_branch(parts),
         "switch" => methods::parse_switch(parts),
         "fuse" | "merge" => methods::parse_fuse(parts),
+        "clone" => methods::parse_clone(parts),
+        "diff" | "differentiate" => methods::parse_diff(parts),
+        "restore" | "res" => methods::parse_restore(parts),
+        "inspect" => methods::parse_inspect(parts),
+        "verify" => methods::parse_verify(parts),
+        "export" => methods::parse_export(parts),
         _ => Err("Unknown command".into()),
     }
 }

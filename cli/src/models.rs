@@ -14,7 +14,7 @@ pub enum Commands {
     Add(AddArgs),     // Stage files for the next save
     Remove(RemArgs),  // Untrack staged files
     Status(StatArgs), // Show the current workspace status
-    Diff(DiffArgs),   // Compare files or saves
+    Diff(DiffArgs),   // Compare files from saves or saves
     // Saves
     Save(SaveArgs),    // Create an audited save
     Restore(RestArgs), // Restore files from a previous save
@@ -24,8 +24,8 @@ pub enum Commands {
     // Safety
     Encrypt(EcArgs),   // Encrypt Vaults, saves, or selected contents
     Compact(CompArgs), // Compress saves or the entire Vault
-    Verify(VerArgs),   // Verify snapshot integrity and blockchain health
-    Export(ExpArgs),   // Export a protected Vault archive
+    Verify(VeriArgs),  // Verify snapshot or Vault integrity and blockchain health
+    Export(ExpoArgs),  // Export a protected Vault archive
     // Branching
     Branch(BranchArgs), // Create or remove branches
     Switch(SwitchArgs), // Change the active branch
@@ -80,8 +80,6 @@ impl FromStr for EncryptionMethod {
 pub enum InternalObject {
     Vault,
     Save,
-    Tree,
-    File,
 }
 
 impl FromStr for InternalObject {
@@ -117,7 +115,7 @@ pub struct RemArgs {
 
 #[derive(Debug)]
 pub struct StatArgs {
-    pub save: String,
+    pub save: Option<String>,
 }
 
 #[derive(Debug)]
@@ -144,13 +142,14 @@ pub struct EcArgs {
     pub id: String,
     pub method: EncryptionMethod,
     pub plus_security: bool, // Use Argon2 to hash special files, such as a .env or password file
+    pub output: Option<PathBuf>,
     pub key: Option<String>, // Used with method, Automaticly is applied Argon2
     pub apply_ps: Option<Vec<PathBuf>>, // Apply plus_security to those files
 }
 
 #[derive(Debug)]
 pub struct LogArgs {
-    pub count: u8, // amount of saves that will be shown
+    pub count: Option<u16>, // amount of saves that will be shown
     pub filters: Option<Vec<LogFilters>>,
 }
 
@@ -179,7 +178,48 @@ pub struct SwitchArgs {
 pub struct FuseArgs {
     pub branch1: String,
     pub branch2: String,
+    pub message: Option<String>,
     pub flags: Option<Vec<FuseFlags>>,
+}
+
+#[derive(Debug)]
+pub struct CloneArgs {
+    pub dest_vault: String,
+    pub source_vault: String,
+}
+
+#[derive(Debug)]
+pub struct DiffArgs {
+    pub save1: Option<String>,
+    pub save2: Option<String>,
+    pub files: Option<Vec<PathBuf>>,
+}
+
+#[derive(Debug)]
+pub struct RestArgs {
+    pub save: String,
+    pub overwrite: bool,
+    pub files: Option<Vec<PathBuf>>,
+}
+
+#[derive(Debug)]
+pub struct InsArgs {
+    pub save: String,
+    pub flags: Option<Vec<InsFlags>>,
+}
+
+#[derive(Debug)]
+pub struct VeriArgs {
+    pub otype: InternalObject,
+    pub id: String,
+}
+
+#[derive(Debug)]
+pub struct ExpoArgs {
+    pub vault: String,
+    pub extreme_safety: bool,
+    pub save: Option<String>,
+    pub destination: Option<PathBuf>,
 }
 
 // ---------- Enums for flags ---------- \\
@@ -239,6 +279,26 @@ impl FromStr for LogFilters {
             "-oc" | "--only-compacted" => Ok(LogFilters::OnlyCompacted),
             "-oe" | "--only-encrypted" => Ok(LogFilters::OnlyEncypted),
             "--time" | "-to" => Ok(LogFilters::TimeOrder),
+            _ => Err("Unknown Internal Object"),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum InsFlags {
+    Detailed,
+    Simplified,
+    Status,
+}
+
+impl FromStr for InsFlags {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_ascii_lowercase().as_str() {
+            "-det" | "--detailed" => Ok(InsFlags::Detailed),
+            "-sim" | "--simplified" => Ok(InsFlags::Simplified),
+            "-stat" | "--status" => Ok(InsFlags::Status),
             _ => Err("Unknown Internal Object"),
         }
     }

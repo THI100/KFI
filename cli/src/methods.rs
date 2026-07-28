@@ -259,3 +259,15 @@ pub fn parse_fuse(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
         flags: if flags.is_empty() { None } else { Some(flags) },
     }))
 }
+
+pub fn parse_clone(mut parts: Tokens<'_>) -> Result<models::Commands, String>
+
+pub fn parse_diff(mut parts: Tokens<'_>) -> Result<models::Commands, String>
+
+pub fn parse_restore(mut parts: Tokens<'_>) -> Result<models::Commands, String>
+
+pub fn parse_inspect(mut parts: Tokens<'_>) -> Result<models::Commands, String>
+
+pub fn parse_verify(mut parts: Tokens<'_>) -> Result<models::Commands, String>
+
+pub fn parse_export(mut parts: Tokens<'_>) -> Result<models::Commands, String>
