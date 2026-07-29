@@ -1,6 +1,7 @@
 use crate::models::{
-    self, AddArgs, BranchArgs, CompArgs, DesArgs, DissArgs, EcArgs, FuseArgs, InitArgs, LogArgs,
-    OpenArgs, RemArgs, SaveArgs, StatArgs, SwitchArgs,
+    self, AddArgs, BranchArgs, CloneArgs, CompArgs, DesArgs, DiffArgs, DissArgs, EcArgs, ExpoArgs,
+    FuseArgs, InitArgs, InsArgs, LogArgs, OpenArgs, RemArgs, RestArgs, SaveArgs, StatArgs,
+    SwitchArgs, VeriArgs,
 };
 use std::path::PathBuf;
 
@@ -89,11 +90,11 @@ pub fn parse_remove(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
 }
 
 pub fn parse_status(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
-    let save = parts.next().ok_or("Missing save")?;
+    let save = parts.next().map(String::from);
 
     unexpected_argument("status", &mut parts)?;
 
-    Ok(models::Commands::Status(StatArgs { save: save.into() }))
+    Ok(models::Commands::Status(StatArgs { save: save }))
 }
 
 pub fn parse_save(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
@@ -165,13 +166,24 @@ pub fn parse_encrypt(mut parts: Tokens<'_>) -> Result<models::Commands, String> 
 
     let key = parts.next().map(String::from);
 
-    let apply_ps: Vec<PathBuf> = parts.map(PathBuf::from).collect();
+    let mut output = None;
+    let mut apply_ps = Vec::new();
+
+    while let Some(arg) = parts.next() {
+        match arg {
+            "-o" | "--output" => {
+                output = parts.next().map(PathBuf::from);
+            }
+            file => apply_ps.push(PathBuf::from(file)),
+        }
+    }
 
     Ok(models::Commands::Encrypt(EcArgs {
         otype: otype,
         id: id,
         method: method,
         plus_security: plus_security,
+        output: output,
         key: key,
         apply_ps: if apply_ps.is_empty() {
             None
@@ -182,11 +194,14 @@ pub fn parse_encrypt(mut parts: Tokens<'_>) -> Result<models::Commands, String> 
 }
 
 pub fn parse_log(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
-    let count_in_str = parts.next().ok_or("Missing count")?;
-
-    let count = count_in_str
-        .parse::<u8>()
-        .map_err(|_| "Count must be a number between 0 and 255")?;
+    let count = match parts.next() {
+        Some(count_in_str) => Some(
+            count_in_str
+                .parse::<u16>()
+                .map_err(|_| "Count must be a number between 0 and 65535".to_string())?,
+        ),
+        None => None,
+    };
 
     let mut filters = Vec::new();
 
@@ -247,6 +262,7 @@ pub fn parse_switch(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
 pub fn parse_fuse(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let trunk_branch = parts.next().ok_or("Missing trunk branch")?.into();
     let feeder_branch = parts.next().ok_or("Missing feeder branch")?.into();
+    let message = parse_quoted(&mut parts);
     let mut flags = Vec::new();
 
     while let Some(flag) = parts.next() {
@@ -256,18 +272,111 @@ pub fn parse_fuse(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     Ok(models::Commands::Fuse(FuseArgs {
         branch1: trunk_branch,
         branch2: feeder_branch,
+        message: message,
         flags: if flags.is_empty() { None } else { Some(flags) },
     }))
 }
 
-pub fn parse_clone(mut parts: Tokens<'_>) -> Result<models::Commands, String>
+pub fn parse_clone(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let dest_vault = parts.next().ok_or("Missing destination vault")?.to_string();
+    let source_vault = parts.next().ok_or("Missing source vault")?.to_string();
 
-pub fn parse_diff(mut parts: Tokens<'_>) -> Result<models::Commands, String>
+    unexpected_argument("clone", &mut parts)?;
 
-pub fn parse_restore(mut parts: Tokens<'_>) -> Result<models::Commands, String>
+    Ok(models::Commands::Clone(CloneArgs {
+        dest_vault: dest_vault,
+        source_vault: source_vault,
+    }))
+}
 
-pub fn parse_inspect(mut parts: Tokens<'_>) -> Result<models::Commands, String>
+pub fn parse_diff(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let save1 = parts.next().map(String::from);
+    let save2 = parts.next().map(String::from);
+    let files: Vec<PathBuf> = parts.map(PathBuf::from).collect();
 
-pub fn parse_verify(mut parts: Tokens<'_>) -> Result<models::Commands, String>
+    Ok(models::Commands::Diff(DiffArgs {
+        save1: save1,
+        save2: save2,
+        files: if files.is_empty() { None } else { Some(files) },
+    }))
+}
 
-pub fn parse_export(mut parts: Tokens<'_>) -> Result<models::Commands, String>
+pub fn parse_restore(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let save = parts.next().ok_or("Missing save")?.to_string();
+
+    let overwrite = match parts.next() {
+        Some(flag) => flag
+            .parse::<bool>()
+            .map_err(|_| "overwrite must be 'true' or 'false'".to_string())?,
+        None => false,
+    };
+
+    let files: Vec<PathBuf> = parts.map(PathBuf::from).collect();
+
+    Ok(models::Commands::Restore(RestArgs {
+        save: save,
+        overwrite: overwrite,
+        files: if files.is_empty() { None } else { Some(files) },
+    }))
+}
+
+pub fn parse_inspect(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let save = parts.next().ok_or("Missing save")?.to_string();
+    let mut flags = Vec::new();
+
+    while let Some(flag) = parts.next() {
+        flags.push(flag.parse::<models::InsFlags>()?);
+    }
+
+    Ok(models::Commands::Inspect(InsArgs {
+        save: save,
+        flags: if flags.is_empty() { None } else { Some(flags) },
+    }))
+}
+
+pub fn parse_verify(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let otype = parts
+        .next()
+        .ok_or("Missing object type parameter")?
+        .parse::<models::InternalObject>()
+        .map_err(|e| e.to_string())?;
+
+    let id = parts.next().ok_or("Missing id parameter")?.to_string();
+
+    unexpected_argument("verify", &mut parts)?;
+
+    Ok(models::Commands::Verify(VeriArgs {
+        otype: otype,
+        id: id,
+    }))
+}
+
+pub fn parse_export(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
+    let vault = parts.next().ok_or("Missing vault")?.to_string();
+    let mut extreme_safety = false;
+    let mut save = None;
+    let mut destination = None;
+
+    while let Some(arg) = parts.next() {
+        match arg {
+            "-xs" | "--extreme-safety" => extreme_safety = true,
+            "-d" | "--destination" => {
+                destination = parts.next().map(PathBuf::from);
+            }
+            other => {
+                if save.is_none() {
+                    save = Some(other.to_string());
+                } else {
+                    return Err(format!("export: unexpected argument '{}'", other));
+                }
+            }
+        }
+    }
+
+    Ok(models::Commands::Export(ExpoArgs {
+        vault: vault,
+        extreme_safety: extreme_safety,
+        save: save,
+        destination: destination,
+    }))
+}

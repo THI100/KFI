@@ -39,8 +39,8 @@ pub fn dispatch(command: Commands) {
             println!("Log: {args:#?}");
         }
 
-        Commands::Change(args) => {
-            println!("Change: {args:#?}");
+        Commands::Open(args) => {
+            println!("Open: {args:#?}");
         }
 
         Commands::Destroy(args) => {
