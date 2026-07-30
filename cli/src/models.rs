@@ -1,9 +1,10 @@
+use serde::Serialize;
 use std::path::PathBuf;
 use std::str::FromStr;
 
 // ---------- Enums ---------- \\
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum Commands {
     // Vault Management
     Init(InitArgs),   // Create a new Vault in a folder
@@ -32,7 +33,7 @@ pub enum Commands {
     Fuse(FuseArgs),     // Merge two branches
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum HashAlgo {
     Blake3,
     Kaurea,
@@ -52,7 +53,7 @@ impl FromStr for HashAlgo {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum EncryptionMethod {
     Aes,
     ChaCha20,
@@ -76,7 +77,7 @@ impl FromStr for EncryptionMethod {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum InternalObject {
     Vault,
     Save,
@@ -96,47 +97,47 @@ impl FromStr for InternalObject {
 
 // ---------- Arguments ---------- \\
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct InitArgs {
     pub vault: String,
     pub location: PathBuf,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct AddArgs {
     pub all: bool,
     pub files: Option<Vec<PathBuf>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct RemArgs {
     pub files: Vec<PathBuf>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct StatArgs {
     pub save: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct SaveArgs {
     pub message: String,
     pub primitive: HashAlgo,
     pub flags: Option<Vec<SaveFlags>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct DissArgs {
     pub save: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct CompArgs {
     pub all: bool,
     pub save: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct EcArgs {
     pub otype: InternalObject,
     pub id: String,
@@ -147,34 +148,34 @@ pub struct EcArgs {
     pub apply_ps: Option<Vec<PathBuf>>, // Apply plus_security to those files
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct LogArgs {
     pub count: Option<u16>, // amount of saves that will be shown
     pub filters: Option<Vec<LogFilters>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct OpenArgs {
     pub vault: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct DesArgs {
     pub vault: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct BranchArgs {
     pub branch: String,
     pub flag: Option<BranchFlags>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct SwitchArgs {
     pub branch: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct FuseArgs {
     pub branch1: String,
     pub branch2: String,
@@ -182,39 +183,39 @@ pub struct FuseArgs {
     pub flags: Option<Vec<FuseFlags>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct CloneArgs {
     pub dest_vault: String,
     pub source_vault: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct DiffArgs {
     pub save1: Option<String>,
     pub save2: Option<String>,
     pub files: Option<Vec<PathBuf>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct RestArgs {
     pub save: String,
     pub overwrite: bool,
     pub files: Option<Vec<PathBuf>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct InsArgs {
     pub save: String,
     pub flags: Option<Vec<InsFlags>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct VeriArgs {
     pub otype: InternalObject,
     pub id: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct ExpoArgs {
     pub vault: String,
     pub extreme_safety: bool,
@@ -224,7 +225,7 @@ pub struct ExpoArgs {
 
 // ---------- Enums for flags ---------- \\
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum FuseFlags {
     ByPass,
     InteruptionForSave,
@@ -244,7 +245,7 @@ impl FromStr for FuseFlags {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum BranchFlags {
     Delete,
     New,
@@ -262,7 +263,7 @@ impl FromStr for BranchFlags {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum LogFilters {
     AlphabeticOrder,
     TimeOrder,
@@ -284,7 +285,7 @@ impl FromStr for LogFilters {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum InsFlags {
     Detailed,
     Simplified,
@@ -304,7 +305,7 @@ impl FromStr for InsFlags {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum SaveFlags {
     AllowEmpty,
     Sign,

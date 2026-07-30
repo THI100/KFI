@@ -17,6 +17,8 @@ repository = "https://github.com/THI100/KFI"
 
 [workspace.dependencies]
 sled = "0.34.7"
+toml = "1.1.4"
+serde = "1.0.229"
 
 # ---------- Optimizations ---------- #
 
