@@ -15,6 +15,7 @@ Commands
     saves/
     refs/
   objects/
+  info/
   index
   ```
   - .vaultbypass: utilize ```file_name``` for files and ```dir/``` for folders for them to be excluded from the vault tracking system, .vault/ is already defined to be bypassed on the system itself.

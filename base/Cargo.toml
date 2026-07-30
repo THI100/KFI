@@ -1,5 +1,5 @@
 [package]
-name = "runner"
+name = "base"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -7,6 +7,3 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-cli = { path = "../cli" }
-base = { path = "../base" }
-sled = "0.34.7"

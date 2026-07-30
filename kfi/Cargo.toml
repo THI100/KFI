@@ -9,3 +9,5 @@ repository.workspace = true
 [dependencies]
 cli = { path = "../cli" }
 runner = { path = "../runner" }
+base = { path = "../base" }
+sled = "0.34.7"

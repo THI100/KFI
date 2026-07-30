@@ -3,7 +3,8 @@ resolver = "3"
 members = [
     "cli",
     "kfi",
-    "runner"
+    "runner",
+    "base"
 ]
 default-members = ["kfi"]
 
@@ -15,6 +16,7 @@ license = "MIT"
 repository = "https://github.com/THI100/KFI"
 
 [workspace.dependencies]
+sled = "0.34.7"
 
 # ---------- Optimizations ---------- #
 
