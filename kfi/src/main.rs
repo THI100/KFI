@@ -23,12 +23,16 @@ mod tests {
             ("branch a -N", true),
             ("switch b", true),
             ("fuse a b -i", true),
+            ("clone new_vault old_vault", true),
+            ("diff #faodpvs3053254135.. #bcfe093a1153ac.. file1", true),
+            ("restore #faodpvs3053254135.. true file1 file2", true),
+            ("inspect #faodpvs3053254135.. -det", true),
+            ("verify vault blu", true),
+            ("export blu -xs #faodpvs3053254135.. -d ./backup", true),
             ("monkeysssssss", false),
         ];
-
         for (input, should_succeed) in inputs {
             let result = cli::parse(input);
-
             if should_succeed {
                 assert!(
                     result.is_ok(),
