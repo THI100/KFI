@@ -6,88 +6,41 @@ mod saving;
 mod tracking;
 
 pub fn dispatch(command: Commands) {
-    match command {
+    let result = match command {
         // Vault Management \\
         Commands::Init(args) => management::init::run(args),
-
-        Commands::Open(args) => {
-            println!("Open: {args:#?}");
-        }
-
-        Commands::Clone(args) => {
-            println!("Clone: {args:#?}");
-        }
-
-        Commands::Destroy(args) => {
-            println!("Destroy: {args:#?}");
-        }
+        Commands::Open(args) => management::open::run(args),
+        Commands::Clone(args) => management::clone::run(args),
+        Commands::Destroy(args) => management::destroy::run(args),
 
         // File Tracking \\
-        Commands::Add(args) => {
-            println!("Add: {args:#?}");
-        }
-
-        Commands::Remove(args) => {
-            println!("Remove: {args:#?}");
-        }
-
-        Commands::Status(args) => {
-            println!("Status: {args:#?}");
-        }
-
-        Commands::Diff(args) => {
-            println!("Diff: {args:#?}");
-        }
+        Commands::Add(args) => tracking::add::run(args),
+        Commands::Remove(args) => tracking::remove::run(args),
+        Commands::Status(args) => tracking::status::run(args),
+        Commands::Diff(args) => tracking::diff::run(args),
 
         // Saves \\
-        Commands::Save(args) => {
-            println!("Save: {args:#?}");
-        }
-
-        Commands::Restore(args) => {
-            println!("Restore: {args:#?}");
-        }
-
-        Commands::Discard(args) => {
-            println!("Discard: {args:#?}");
-        }
-
-        Commands::Log(args) => {
-            println!("Log: {args:#?}");
-        }
-
-        Commands::Inspect(args) => {
-            println!("Inspect: {args:#?}");
-        }
+        Commands::Save(args) => saving::save::run(args),
+        Commands::Restore(args) => saving::restore::run(args),
+        Commands::Discard(args) => saving::discard::run(args),
+        Commands::Log(args) => saving::log::run(args),
+        Commands::Inspect(args) => saving::inspect::run(args),
 
         // Safety \\
-        Commands::Encrypt(args) => {
-            println!("Encrypt: {args:#?}");
-        }
-
-        Commands::Compact(args) => {
-            println!("Compact: {args:#?}");
-        }
-
-        Commands::Verify(args) => {
-            println!("Verify: {args:#?}");
-        }
-
-        Commands::Export(args) => {
-            println!("Export: {args:#?}");
-        }
+        Commands::Encrypt(args) => safety::encrypt::run(args),
+        Commands::Compact(args) => safety::compact::run(args),
+        Commands::Verify(args) => safety::verify::run(args),
+        Commands::Export(args) => safety::export::run(args),
 
         // Branching \\
-        Commands::Branch(args) => {
-            println!("Branch: {args:#?}");
-        }
+        Commands::Branch(args) => branching::branch::run(args),
+        Commands::Switch(args) => branching::switch::run(args),
+        Commands::Fuse(args) => branching::fuse::run(args),
+    };
 
-        Commands::Switch(args) => {
-            println!("Switch: {args:#?}");
-        }
-
-        Commands::Fuse(args) => {
-            println!("Fuse: {args:#?}");
-        }
+    // Handle any errors returned by the subcommand
+    if let Err(err) = result {
+        eprintln!("Error: {err}");
+        std::process::exit(1);
     }
 }
