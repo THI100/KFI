@@ -55,7 +55,7 @@ pub fn run(args: models::InitArgs) -> Result<(), Errors> {
         }
         false
     } else {
-        File::create_new(&bypass_path)?;
+        write_new(&bypass_path, b".vault/\n")?;
         true
     };
 

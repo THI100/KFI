@@ -40,3 +40,8 @@ Commands
         └── unaudited_saves/
     ```
     - .vaultbypass: utilize ```file_name``` for files, ```dir/``` for folders, for general file types utilize ```*.txt``` for them to be excluded from the vault tracking system, .vault/ is already defined to be bypassed on the system itself.
+
+  2. Open:
+  - What open does: Open a different vault at a command
+  - Which arguments does it takes: 1 obrigatory argument, the vault name.
+  - Dependency: a external file that is currently named store.toml for more information refer to commands_templates.

@@ -1,0 +1,6 @@
+active = "dummy"
+
+[vaults]
+dummy = 'C:\Users\user\Coding\dummy'
+bar = 'C:\Users\user\Coding\dummy'
+foo = 'C:\Users\user\Coding\dummy'
