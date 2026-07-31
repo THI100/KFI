@@ -11,7 +11,28 @@ type Errors = Box<dyn Error>;
 
 // Structs for config.toml
 #[derive(Debug, Serialize)]
-struct Config {}
+struct Config {
+    vault: VaultSt,
+    defaults: DefSt,
+    safety: SafeSt,
+}
+
+#[derive(Debug, Serialize)]
+struct VaultSt {
+    name: String,
+    created: String,
+    version: u8,
+}
+
+#[derive(Debug, Serialize)]
+struct DefSt {
+    branch: String,
+}
+
+#[derive(Debug, Serialize)]
+struct SafeSt {
+    create_bypass: bool,
+}
 
 pub fn run(args: models::InitArgs) -> Result<(), Errors> {
     return Err(format!(
@@ -42,10 +63,10 @@ pub fn run(args: models::InitArgs) -> Result<(), Errors> {
     fs::create_dir(pathv.join(PathBuf::from("/objects")))?;
 
     // Create files
-    let mut act = File::create_new(pathv.join(PathBuf::from("ACT")))?; // Actual branch, actual save
+    let mut ref = File::create_new(pathv.join(PathBuf::from("REFER")))?; // Actual branch, actual save
     let mut conf = File::create_new(pathv.join(PathBuf::from("config.toml")))?; // Config file
     let db: sled::Db = sled::open(pathv.join(PathBuf::from("index"))).unwrap(); // Index File
 
     // Edit and add data to files
-    act.write_all("Branch: Trunk \n Save: Genesis".as_bytes())?;
+    ref.write_all("./branches/trunk/HEAD".as_bytes())?;
 }

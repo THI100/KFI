@@ -1,11 +1,10 @@
-name = "MyVault"
+[vault]
+name = "Work Vault"
+created = "2026-07-30T15:40:11Z"
 version = 1
 
-[hash]
-algorithm = "sha256"
+[defaults]
+branch = "trunk"
 
-[encryption]
-enabled = false
-
-[compression]
-enabled = false
+[safety]
+create_bypass = true
