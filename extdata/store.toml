@@ -1,4 +1,5 @@
-active = "playground"
+active = "dummy"
 
 [vaults]
 playground = "./extdata/playground"
+dummy = 'C:\Users\Thiago\Coding\dummy'
