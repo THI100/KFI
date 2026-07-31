@@ -35,6 +35,14 @@ struct SafeSt {
     create_bypass: bool,
 }
 
+#[derive(Debug, Serialize)]
+struct VaultInfo {
+    id: String,
+    created: String,
+    last_save: Option<String>,
+    format: u8,
+}
+
 pub fn run(args: models::InitArgs) -> Result<(), Errors> {
     let location = args.location;
     let vault_path = location.join(".vault");
@@ -98,11 +106,12 @@ pub fn run(args: models::InitArgs) -> Result<(), Errors> {
     )?;
     write_new(&vault_path.join("branches/trunk/HEAD"), b"Genesis\n")?;
 
-    let vault_info = format!(
-        "{{\n  \"id\": {},\n  \"created\": {},\n  \"last_save\": null,\n  \"format\": 1\n}}\n",
-        json_string(&args.vault),
-        json_string(&created),
-    );
+    let vault_info = serde_json::to_string_pretty(&VaultInfo {
+        id: args.vault.clone(),
+        created: created.clone(),
+        last_save: None,
+        format: 1,
+    })? + "\n";
     write_new(&vault_path.join("info/vault.json"), vault_info.as_bytes())?;
     write_new(
         &vault_path.join("info/statistics.json"),
@@ -139,36 +148,18 @@ fn write_new(path: &Path, data: &[u8]) -> Result<(), Errors> {
 fn update_store(vault: &str, location: &Path) -> Result<(), Errors> {
     let store_path = Path::new("extdata/store.toml");
     let contents = fs::read_to_string(store_path)?;
-    let mut store = contents.parse::<toml::Value>()?;
+    let mut store = contents.parse::<toml_edit::DocumentMut>()?;
 
-    let table = store
-        .as_table_mut()
-        .ok_or("store.toml must contain a TOML table")?;
+    store["active"] = toml_edit::value(vault);
 
-    table.insert("active".into(), toml::Value::String(vault.to_string()));
-
-    let vaults = table
-        .entry("vaults")
-        .or_insert_with(|| toml::Value::Table(toml::Table::new()))
+    let vaults = store["vaults"]
+        .or_insert(toml_edit::table())
         .as_table_mut()
         .ok_or("store.toml vaults must be a TOML table")?;
 
     vaults.remove("pg");
-    vaults.insert(
-        vault.to_string(),
-        toml::Value::String(location.to_string_lossy().into_owned()),
-    );
+    vaults[vault] = toml_edit::value(location.to_string_lossy().into_owned());
 
-    fs::write(store_path, toml::to_string_pretty(&store)?)?;
+    fs::write(store_path, store.to_string())?;
     Ok(())
-}
-
-fn json_string(value: &str) -> String {
-    let escaped = value
-        .replace('\\', "\\\\")
-        .replace('\"', "\\\"")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
-        .replace('\t', "\\t");
-    format!("\\\"{escaped}\\\"")
 }
