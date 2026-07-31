@@ -4,7 +4,7 @@ members = [
     "cli",
     "kfi",
     "runner",
-    "base"
+    "helper"
 ]
 default-members = ["kfi"]
 

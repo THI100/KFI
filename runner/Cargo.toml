@@ -12,4 +12,3 @@ base = { path = "../base" }
 sled = "0.34.7"
 toml = "1.1.4"
 serde = { version = "1.0.229", features = ["derive"] }
-toml_edit = "0.25.13"

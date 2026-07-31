@@ -1,7 +1,6 @@
 use cli::models;
 use serde::Serialize;
 use sled;
-use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 use std::fs::File;
@@ -34,14 +33,6 @@ struct DefSt {
 #[derive(Debug, Serialize)]
 struct SafeSt {
     create_bypass: bool,
-}
-
-// Structs for store.toml
-
-#[derive(Debug, Serialize)]
-struct Store {
-    active: String,
-    vaults: HashMap<String, String>,
 }
 
 pub fn run(args: models::InitArgs) -> Result<(), Errors> {

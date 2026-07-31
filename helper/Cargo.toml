@@ -1,5 +1,5 @@
 [package]
-name = "base"
+name = "helper"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -7,3 +7,6 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+toml = "1.1.4"
+serde = { version = "1.0.229", features = ["derive"] }
+toml_edit = "0.25.13"
