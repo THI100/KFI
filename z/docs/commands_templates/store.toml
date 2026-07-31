@@ -1,6 +1,4 @@
-active = "dummy"
+# active = "pg"
 
-[vaults]
-dummy = 'C:\Users\user\Coding\dummy'
-bar = 'C:\Users\user\Coding\bar'
-foo = 'C:\Users\user\Coding\foo'
+# [vaults]
+# pg = './extdata/pg'

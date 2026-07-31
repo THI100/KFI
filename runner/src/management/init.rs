@@ -113,6 +113,8 @@ pub fn run(args: models::InitArgs) -> Result<(), Errors> {
     let db = sled::open(vault_path.join("index"))?;
     db.flush()?;
 
+    update_store(&args.vault, &location)?;
+
     if bypass_created {
         println!(
             "Initialized vault at {} and created .vaultbypass",
@@ -131,6 +133,33 @@ pub fn run(args: models::InitArgs) -> Result<(), Errors> {
 fn write_new(path: &Path, data: &[u8]) -> Result<(), Errors> {
     let mut file = File::create_new(path)?;
     file.write_all(data)?;
+    Ok(())
+}
+
+fn update_store(vault: &str, location: &Path) -> Result<(), Errors> {
+    let store_path = Path::new("extdata/store.toml");
+    let contents = fs::read_to_string(store_path)?;
+    let mut store = contents.parse::<toml::Value>()?;
+
+    let table = store
+        .as_table_mut()
+        .ok_or("store.toml must contain a TOML table")?;
+
+    table.insert("active".into(), toml::Value::String(vault.to_string()));
+
+    let vaults = table
+        .entry("vaults")
+        .or_insert_with(|| toml::Value::Table(toml::Table::new()))
+        .as_table_mut()
+        .ok_or("store.toml vaults must be a TOML table")?;
+
+    vaults.remove("pg");
+    vaults.insert(
+        vault.to_string(),
+        toml::Value::String(location.to_string_lossy().into_owned()),
+    );
+
+    fs::write(store_path, toml::to_string_pretty(&store)?)?;
     Ok(())
 }
 

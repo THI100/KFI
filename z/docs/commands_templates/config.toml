@@ -1,10 +1,10 @@
-[vault]
-name = "name given by the InitArgs"
-created = "Date and Time"
-version = 1 #Default value
+# [vault]
+# name = "name given by the InitArgs"
+# created = "Date and Time"
+# version = 1 #Default value
 
-[defaults]
-branch = "trunk" #Default value
+# [defaults]
+# branch = "trunk" #Default value
 
-[safety]
-create_bypass = true #Default value
+# [safety]
+# create_bypass = true #Default value

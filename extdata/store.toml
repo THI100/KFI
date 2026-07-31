@@ -1,0 +1,4 @@
+active = "playground"
+
+[vaults]
+playground = "./extdata/playground"

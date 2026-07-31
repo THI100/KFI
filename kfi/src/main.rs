@@ -2,6 +2,7 @@ use std::env;
 use std::io::{self, Write};
 
 use cli;
+use helper;
 use runner;
 
 #[cfg(test)]
@@ -49,6 +50,11 @@ mod tests {
 }
 
 fn main() {
+    if let Err(err) = helper::create_store() {
+        eprintln!("Failed to initialize store: {err}");
+        return;
+    }
+
     let args: Vec<String> = env::args().skip(1).collect();
 
     if !args.is_empty() {
