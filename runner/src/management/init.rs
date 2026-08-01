@@ -157,7 +157,7 @@ fn update_store(vault: &str, location: &Path) -> Result<(), Errors> {
         .as_table_mut()
         .ok_or("store.toml vaults must be a TOML table")?;
 
-    vaults.remove("pg");
+    vaults.remove("playground");
     vaults[vault] = toml_edit::value(location.to_string_lossy().into_owned());
 
     fs::write(store_path, store.to_string())?;
