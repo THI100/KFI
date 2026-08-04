@@ -10,14 +10,14 @@ mod tests {
     #[test]
     fn test_parse_commands() {
         let inputs = [
-            ("init blu ./Blu", true),
+            ("init blu ./Blu Blake3 aes", true),
             ("add -a file3 file2", true),
             ("remove file3 file2", true),
             ("Status #faodpvs3053254135..", true),
-            ("save 'laga vaken' Blake3 --sign", true),
+            ("save 'laga vaken' --sign", true),
             ("discard #faodpvs3053254135..", true),
             ("comp -a", true),
-            ("Encrypt save #faodpvs3053254135.. aes false", true),
+            ("Encrypt save #faodpvs3053254135.. false", true),
             ("log 2", true),
             ("Open fanf", true),
             ("Destroy mac", true),

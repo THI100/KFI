@@ -53,12 +53,22 @@ fn unexpected_argument(command: &str, parts: &mut Tokens<'_>) -> Result<(), Stri
 pub fn parse_init(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let vault = parts.next().ok_or("Missing vault name")?;
     let loc = parts.next().ok_or("Missing Path")?;
+    let primitive = parts
+        .next()
+        .ok_or("Missing primitive parameter")?
+        .parse::<models::HashAlgo>()?;
+    let method = parts
+        .next()
+        .ok_or("Missing method parameter")?
+        .parse::<models::EncryptionMethod>()?;
 
     unexpected_argument("init", &mut parts)?;
 
     Ok(models::Commands::Init(InitArgs {
         vault: vault.to_string(),
         location: PathBuf::from(loc),
+        primitive: primitive,
+        method: method,
     }))
 }
 
@@ -99,10 +109,6 @@ pub fn parse_status(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
 
 pub fn parse_save(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
     let message = parse_quoted(&mut parts).ok_or("Missing message")?;
-    let primitive = parts
-        .next()
-        .ok_or("Missing primitive parameter")?
-        .parse::<models::HashAlgo>()?;
     let mut flags = Vec::new();
 
     while let Some(flag) = parts.next() {
@@ -111,7 +117,6 @@ pub fn parse_save(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
 
     Ok(models::Commands::Save(SaveArgs {
         message: message.into(),
-        primitive: primitive,
         flags: if flags.is_empty() { None } else { Some(flags) },
     }))
 }
@@ -152,12 +157,6 @@ pub fn parse_encrypt(mut parts: Tokens<'_>) -> Result<models::Commands, String> 
 
     let id = parts.next().ok_or("Missing save parameter")?.to_string();
 
-    let method = parts
-        .next()
-        .ok_or("Missing method parameter")?
-        .parse::<models::EncryptionMethod>()
-        .map_err(|e| e.to_string())?;
-
     let plus_security = parts
         .next()
         .ok_or("Missing plus_security parameter")?
@@ -181,7 +180,6 @@ pub fn parse_encrypt(mut parts: Tokens<'_>) -> Result<models::Commands, String> 
     Ok(models::Commands::Encrypt(EcArgs {
         otype: otype,
         id: id,
-        method: method,
         plus_security: plus_security,
         output: output,
         key: key,

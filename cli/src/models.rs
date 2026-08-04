@@ -101,6 +101,8 @@ impl FromStr for InternalObject {
 pub struct InitArgs {
     pub vault: String,
     pub location: PathBuf,
+    pub primitive: HashAlgo,
+    pub method: EncryptionMethod,
 }
 
 #[derive(Debug, Serialize)]
@@ -122,7 +124,6 @@ pub struct StatArgs {
 #[derive(Debug, Serialize)]
 pub struct SaveArgs {
     pub message: String,
-    pub primitive: HashAlgo,
     pub flags: Option<Vec<SaveFlags>>,
 }
 
@@ -141,7 +142,6 @@ pub struct CompArgs {
 pub struct EcArgs {
     pub otype: InternalObject,
     pub id: String,
-    pub method: EncryptionMethod,
     pub plus_security: bool, // Use Argon2 to hash special files, such as a .env or password file
     pub output: Option<PathBuf>,
     pub key: Option<String>, // Used with method, Automaticly is applied Argon2

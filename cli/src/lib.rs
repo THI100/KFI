@@ -31,7 +31,7 @@ pub fn parse<T: AsRef<str>>(req: T) -> Result<Commands, String> {
         "clone" => methods::parse_clone(parts),
         "diff" | "differentiate" => methods::parse_diff(parts),
         "restore" | "res" => methods::parse_restore(parts),
-        "inspect" => methods::parse_inspect(parts),
+        "inspect" | "ins" => methods::parse_inspect(parts),
         "verify" => methods::parse_verify(parts),
         "export" => methods::parse_export(parts),
         _ => Err("Unknown command".into()),
