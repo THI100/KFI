@@ -2,8 +2,8 @@
 
 0.1:
   - Init: Concluded
-  - Open: under Development
-  - Add
+  - Open: Concluded
+  - Add: under Development
   - Remove
   - Status
   - Save
