@@ -33,6 +33,8 @@ struct DefSt {
 #[derive(Debug, Serialize)]
 struct SafeSt {
     create_bypass: bool,
+    primitive: models::HashAlgo,
+    method: models::EncryptionMethod,
 }
 
 #[derive(Debug, Serialize)]
@@ -96,6 +98,8 @@ pub fn run(args: models::InitArgs) -> Result<(), Errors> {
         },
         safety: SafeSt {
             create_bypass: true,
+            primitive: args.primitive,
+            method: args.method,
         },
     };
 
