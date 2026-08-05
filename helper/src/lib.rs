@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
-pub mod hashing;
+pub mod crypto;
 
 type Errors = Box<dyn std::error::Error>;
 
