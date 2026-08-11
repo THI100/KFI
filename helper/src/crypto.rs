@@ -1,9 +1,11 @@
 use std::error::Error;
+
+use blake3::Hasher;
+use sha3::{Digest, Sha3_224, Sha3_256, Sha3_384, Sha3_512};
+use shake::Shake128;
+use shake::digest::{ExtendableOutput, Update, XofReader};
+
 type Errors = Box<dyn Error>;
-use blake3::{Hasher};
-use sha3::{Digest};
-use shake::{Shake128};
-use shake::digest::{Update, ExtendableOutput, XofReader};
 
 // ----- Helpers ----- \\
 
@@ -13,65 +15,69 @@ fn sha_hash<D: Digest>(data: &[u8]) -> Vec<u8> {
     hasher.finalize().to_vec()
 }
 
+fn to_hex(bytes: &[u8]) -> String {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
 
-pub fn encode_hash(algo: &str, input: &str, outsize: &u32) -> Result<(), Errors> {
+    let mut output = String::with_capacity(bytes.len() * 2);
 
-    let mut algo_v = algo;
-
-    if !matches!(outsize, 224 | 256 | 384 | 512) && algo == "Sha3" {
-        algo_v = "Shake";
+    for &byte in bytes {
+        output.push(HEX[(byte >> 4) as usize] as char);
+        output.push(HEX[(byte & 0x0f) as usize] as char);
     }
+
+    output
+}
+
+pub fn encode_hash(algo: &str, input: &str, outsize: &u32) -> Result<String, Errors> {
+    let algo_v = if algo == "Sha3" && !matches!(*outsize, 224 | 256 | 384 | 512) {
+        "Shake"
+    } else {
+        algo
+    };
+
+    let output_len = (*outsize as usize)
+        .checked_div(8)
+        .filter(|&size| size > 0 && *outsize % 8 == 0)
+        .ok_or("Output size must be a positive multiple of 8.")?;
+
+    let binput = input.as_bytes();
 
     match algo_v {
         "Blake3" => {
-            let binput = input.as_bytes();
-
             let mut hasher = Hasher::new();
             hasher.update(binput);
 
-            let mut output_reader = hasher.finalize_xof();
+            let mut output = vec![0u8; output_len];
+            hasher.finalize_xof().fill(&mut output);
 
-            let mut custom_out = [0u8; outsize];
-
-            output_reader.fill(&mut custom_output);
-
-            let hex_string: String = custom_output
-                .iter()
-                .map(|b| format!("{:02x}", b))
-                .collect();
-
-            return hex_string
+            Ok(to_hex(&output))
         }
 
-        "Kaurea" => {
-            // Wait for the adaptation to take variable output sizes
-            return Err("This hashing algorithm is currently inactive.".into());
-        }
+        "Kaurea" => Err("This hashing algorithm is currently inactive.".into()),
 
         "Sha3" => {
-            let binput = input.as_bytes();
-            let mut out;
+            let output = match *outsize {
+                224 => sha_hash::<Sha3_224>(binput),
+                256 => sha_hash::<Sha3_256>(binput),
+                384 => sha_hash::<Sha3_384>(binput),
+                512 => sha_hash::<Sha3_512>(binput),
+                _ => unreachable!("Invalid SHA-3 size is redirected to SHAKE"),
+            };
 
-            match outsize {
-                224 => out = sha_hash<Sha3_224>(binput)
-                256 => out = sha_hash<Sha3_256>(binput)
-                384 => out = sha_hash<Sha3_384>(binput)
-                512 => out = sha_hash<Sha3_512>(binput)
-            }
-
-
+            Ok(to_hex(&output))
         }
+
         "Shake" => {
-            let binput = input.as_bytes();
-
             let mut hasher = Shake128::default();
-
             hasher.update(binput);
 
-            let mut hex_string = hasher.finalize_xof();
+            let mut output = vec![0u8; output_len];
+            hasher.finalize_xof().read(&mut output);
 
-            return hex_string;
+            Ok(to_hex(&output))
         }
+
+        _ => Err(format!("Unsupported hashing algorithm: {algo}").into()),
     }
 }
 
