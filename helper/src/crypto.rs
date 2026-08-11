@@ -1,10 +1,20 @@
 use std::error::Error;
 type Errors = Box<dyn Error>;
-use blake3::{Hasher, }
-use sha3
-use shake
+use blake3::{Hasher};
+use sha3::{Digest};
+use shake::{Shake128};
+use shake::digest::{Update, ExtendableOutput, XofReader};
 
-pub fn encode_hash(algo: &str, input: &str, outsize: u32) -> Result<(), Errors> {
+// ----- Helpers ----- \\
+
+fn sha_hash<D: Digest>(data: &[u8]) -> Vec<u8> {
+    let mut hasher = D::new();
+    hasher.update(data);
+    hasher.finalize().to_vec()
+}
+
+
+pub fn encode_hash(algo: &str, input: &str, outsize: &u32) -> Result<(), Errors> {
 
     let mut algo_v = algo;
 
@@ -12,9 +22,9 @@ pub fn encode_hash(algo: &str, input: &str, outsize: u32) -> Result<(), Errors> 
         algo_v = "Shake";
     }
 
-    match algo {
+    match algo_v {
         "Blake3" => {
-            binput = input.as_bytes();
+            let binput = input.as_bytes();
 
             let mut hasher = Hasher::new();
             hasher.update(binput);
@@ -32,20 +42,37 @@ pub fn encode_hash(algo: &str, input: &str, outsize: u32) -> Result<(), Errors> 
 
             return hex_string
         }
+
         "Kaurea" => {
             // Wait for the adaptation to take variable output sizes
+            return Err("This hashing algorithm is currently inactive.".into());
         }
-        "Sha3" => {}
-        "Shake" => {}
+
+        "Sha3" => {
+            let binput = input.as_bytes();
+            let mut out;
+
+            match outsize {
+                224 => out = sha_hash<Sha3_224>(binput)
+                256 => out = sha_hash<Sha3_256>(binput)
+                384 => out = sha_hash<Sha3_384>(binput)
+                512 => out = sha_hash<Sha3_512>(binput)
+            }
+
+
+        }
+        "Shake" => {
+            let binput = input.as_bytes();
+
+            let mut hasher = Shake128::default();
+
+            hasher.update(binput);
+
+            let mut hex_string = hasher.finalize_xof();
+
+            return hex_string;
+        }
     }
 }
 
 pub fn encode_encryption() -> Result<String, Errors> {}
-
-pub fn encode_stream_hash(algo: &str, input: Vec<u8>, outsize: Option<u32>) -> Result<String, Errors> {
-    match algo {
-        "Blake3" => {}
-        "Kaurea" => {}
-        "Sha3" => {}
-    }
-}

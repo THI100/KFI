@@ -172,6 +172,7 @@ dependencies = [
  "cc",
  "serde",
  "sha3",
+ "shake",
  "toml",
  "toml_edit",
 ]
