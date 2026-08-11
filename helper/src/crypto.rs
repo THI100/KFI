@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use blake3::Hasher;
+use rand::SeedableRng;
 use sha3::{Digest, Sha3_224, Sha3_256, Sha3_384, Sha3_512};
 use shake::Shake128;
 use shake::digest::{ExtendableOutput, Update, XofReader};
@@ -81,4 +82,24 @@ pub fn encode_hash(algo: &str, input: &str, outsize: &u32) -> Result<String, Err
     }
 }
 
-pub fn encode_encryption() -> Result<String, Errors> {}
+pub fn encode_encryption(
+    algo: &str,
+    input: Vec<u8>,
+    key: &str,
+    outsize: &u32,
+    nonce: Vec<u8>,
+) -> Result<String, Errors> {
+}
+
+pub fn decode_encryption(
+    algo: &str,
+    input: Vec<u8>,
+    key: &str,
+    outsize: &u32,
+    nonce: Vec<u8>,
+) -> Result<String, Errors> {
+}
+
+pub fn generate_nonce(algo: &str, seed: &u128) -> Result<Vec<u8>, Errors> {
+    SeedableRng::from_seed(seed);
+}
