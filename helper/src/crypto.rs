@@ -1,5 +1,8 @@
 use std::error::Error;
 
+// Others \\
+use rand::{RngCore, thread_rng};
+
 // Hashing \\
 use blake3::Hasher;
 use sha3::{Digest, Sha3_224, Sha3_256, Sha3_384, Sha3_512};
@@ -9,9 +12,10 @@ use shake::digest::{ExtendableOutput, Update, XofReader};
 // Encryption \\
 use aes::{
     Aes256,
-    cipher::{BlockCipherEncrypt, BlockEncrypt, KeyInit, generic_array::GenericArray},
+    cipher::{Array, BlockCipherEncrypt, KeyInit},
 };
 use base64::{Engine, engine::general_purpose::STANDARD};
+use chacha20;
 
 type Errors = Box<dyn Error>;
 
@@ -94,7 +98,6 @@ pub fn encode_encryption(
     input: Vec<u8>,
     key: &str,
     outsize: &u32,
-    nonce: Vec<u8>,
 ) -> Result<String, Errors> {
     // Simulate the incoming input is a file, now a vector of bytes values.
 
@@ -102,12 +105,6 @@ pub fn encode_encryption(
         "Aes" => {
             if key.as_bytes().len() != 32 {
                 return Err("AES-256 requires a 32-byte key".into());
-            }
-
-            if !nonce.is_empty() {
-                return Err(
-                    "Raw AES block encryption does not use a nonce; use AES-GCM instead".into(),
-                );
             }
 
             let cipher = Aes256::new_from_slice(key.as_bytes())?;
@@ -120,7 +117,9 @@ pub fn encode_encryption(
             let mut encrypted = Vec::with_capacity(padded.len());
 
             for block_bytes in padded.chunks_exact(16) {
-                let mut block = GenericArray::clone_from_slice(block_bytes);
+                let mut block =
+                    Array::try_from(block_bytes).expect("Chunk size must be exactly 16 bytes");
+
                 cipher.encrypt_block(&mut block);
                 encrypted.extend_from_slice(&block);
             }
@@ -138,13 +137,4 @@ pub fn encode_encryption(
 
         _ => Err(format!("unsupported encryption algorithm: {algo}").into()),
     }
-}
-
-pub fn decode_encryption(
-    algo: &str,
-    input: Vec<u8>,
-    key: &str,
-    outsize: &u32,
-    nonce: Vec<u8>,
-) -> Result<String, Errors> {
 }
