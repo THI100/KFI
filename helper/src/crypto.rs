@@ -1,7 +1,7 @@
 use std::error::Error;
 
 // Others \\
-use rand::{RngCore, thread_rng};
+use rand::RngExt;
 
 // Hashing \\
 use blake3::Hasher;
@@ -15,7 +15,8 @@ use aes::{
     cipher::{Array, BlockCipherEncrypt, KeyInit},
 };
 use base64::{Engine, engine::general_purpose::STANDARD};
-use chacha20;
+use chacha20::ChaCha20;
+use chacha20::cipher::{KeyIvInit, StreamCipher};
 
 type Errors = Box<dyn Error>;
 
@@ -65,7 +66,7 @@ pub fn encode_hash(algo: &str, input: &str, outsize: &u32) -> Result<String, Err
             Ok(to_hex(&output))
         }
 
-        "Kaurea" => Err("This hashing algorithm is currently inactive.".into()),
+        "Kaurea" => todo!(),
 
         "Sha3" => {
             let output = match *outsize {
@@ -99,8 +100,6 @@ pub fn encode_encryption(
     key: &str,
     outsize: &u32,
 ) -> Result<String, Errors> {
-    // Simulate the incoming input is a file, now a vector of bytes values.
-
     match algo {
         "Aes" => {
             if key.as_bytes().len() != 32 {
@@ -131,7 +130,35 @@ pub fn encode_encryption(
             Ok(STANDARD.encode(encrypted))
         }
 
-        "ChaCha20" => todo!(),
+        "ChaCha20" => {
+            // ChaCha20-256 requires a 32-byte key.
+            if key.as_bytes().len() != 32 {
+                return Err("ChaCha20-256 requires a 32-byte key".into());
+            }
+
+            // IETF ChaCha20 uses a 12-byte nonce.
+            let mut nonce = [0u8; 12];
+            rand::rng().fill(&mut nonce);
+
+            let mut ciphertext = input;
+
+            let mut cipher = ChaCha20::new_from_slices(key.as_bytes(), &nonce)
+                .map_err(|_| "invalid ChaCha20 key or nonce")?;
+
+            cipher.apply_keystream(&mut ciphertext);
+
+            let mut output = Vec::with_capacity(nonce.len() + ciphertext.len());
+            output.extend_from_slice(&nonce);
+            output.extend_from_slice(&ciphertext);
+
+            if *outsize != 0 && output.len() as u32 != *outsize {
+                return Err("encrypted output size does not match outsize".into());
+            }
+
+            // Base64-encoded result.
+            Ok(STANDARD.encode(output))
+        }
+
         "ChaCha20Poly1305" => todo!(),
         "AesGcm" => todo!(),
 
