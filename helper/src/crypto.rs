@@ -1,10 +1,17 @@
 use std::error::Error;
 
+// Hashing \\
 use blake3::Hasher;
-use rand::SeedableRng;
 use sha3::{Digest, Sha3_224, Sha3_256, Sha3_384, Sha3_512};
 use shake::Shake128;
 use shake::digest::{ExtendableOutput, Update, XofReader};
+
+// Encryption \\
+use aes::{
+    Aes256,
+    cipher::{BlockCipherEncrypt, BlockEncrypt, KeyInit, generic_array::GenericArray},
+};
+use base64::{Engine, engine::general_purpose::STANDARD};
 
 type Errors = Box<dyn Error>;
 
@@ -89,11 +96,47 @@ pub fn encode_encryption(
     outsize: &u32,
     nonce: Vec<u8>,
 ) -> Result<String, Errors> {
+    // Simulate the incoming input is a file, now a vector of bytes values.
+
     match algo {
-        "Aes" => {}
-        "ChaCha20" => {}
-        "ChaCha20Poly1305" => {}
-        "AesGcm" => {}
+        "Aes" => {
+            if key.as_bytes().len() != 32 {
+                return Err("AES-256 requires a 32-byte key".into());
+            }
+
+            if !nonce.is_empty() {
+                return Err(
+                    "Raw AES block encryption does not use a nonce; use AES-GCM instead".into(),
+                );
+            }
+
+            let cipher = Aes256::new_from_slice(key.as_bytes())?;
+
+            // PKCS#7 padding to AES's 16-byte block size.
+            let padding = 16 - (input.len() % 16);
+            let mut padded = input;
+            padded.extend(std::iter::repeat_n(padding as u8, padding));
+
+            let mut encrypted = Vec::with_capacity(padded.len());
+
+            for block_bytes in padded.chunks_exact(16) {
+                let mut block = GenericArray::clone_from_slice(block_bytes);
+                cipher.encrypt_block(&mut block);
+                encrypted.extend_from_slice(&block);
+            }
+
+            if *outsize != 0 && encrypted.len() as u32 != *outsize {
+                return Err("encrypted output size does not match outsize".into());
+            }
+
+            Ok(STANDARD.encode(encrypted))
+        }
+
+        "ChaCha20" => todo!(),
+        "ChaCha20Poly1305" => todo!(),
+        "AesGcm" => todo!(),
+
+        _ => Err(format!("unsupported encryption algorithm: {algo}").into()),
     }
 }
 
@@ -104,8 +147,4 @@ pub fn decode_encryption(
     outsize: &u32,
     nonce: Vec<u8>,
 ) -> Result<String, Errors> {
-}
-
-pub fn generate_nonce(algo: &str, seed: &u128, size: &u32) -> Result<Vec<u8>, Errors> {
-    SeedableRng::from_seed(seed);
 }
