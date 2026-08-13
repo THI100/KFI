@@ -89,6 +89,12 @@ pub fn encode_encryption(
     outsize: &u32,
     nonce: Vec<u8>,
 ) -> Result<String, Errors> {
+    match algo {
+        "Aes" => {}
+        "ChaCha20" => {}
+        "ChaCha20Poly1305" => {}
+        "AesGcm" => {}
+    }
 }
 
 pub fn decode_encryption(
@@ -100,6 +106,6 @@ pub fn decode_encryption(
 ) -> Result<String, Errors> {
 }
 
-pub fn generate_nonce(algo: &str, seed: &u128) -> Result<Vec<u8>, Errors> {
+pub fn generate_nonce(algo: &str, seed: &u128, size: &u32) -> Result<Vec<u8>, Errors> {
     SeedableRng::from_seed(seed);
 }
