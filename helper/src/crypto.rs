@@ -17,6 +17,10 @@ use aes::{
 use base64::{Engine, engine::general_purpose::STANDARD};
 use chacha20::ChaCha20;
 use chacha20::cipher::{KeyIvInit, StreamCipher};
+use chacha20poly1305::{
+    ChaCha20Poly1305, Nonce,
+    aead::{Aead, Generate},
+};
 
 type Errors = Box<dyn Error>;
 
@@ -159,7 +163,28 @@ pub fn encode_encryption(
             Ok(STANDARD.encode(output))
         }
 
-        "ChaCha20Poly1305" => todo!(),
+        "ChaCha20Poly1305" => {
+            if key.as_bytes().len() != 32 {
+                return Err("ChaCha20-256 requires a 32-byte key".into());
+            }
+
+            let cipher = ChaCha20Poly1305::new_from_slice(key.as_bytes())
+                .map_err(|_| "invalid ChaCha20 key")?;
+
+            let nonce = Nonce::generate();
+            let ciphertext = cipher.encrypt(&nonce, input.as_slice())?;
+
+            let mut output = Vec::with_capacity(nonce.len() + ciphertext.len());
+            output.extend_from_slice(&nonce);
+            output.extend_from_slice(&ciphertext);
+
+            if *outsize != 0 && output.len() as u32 != *outsize {
+                return Err("encrypted output size does not match outsize".into());
+            }
+
+            Ok(STANDARD.encode(output))
+        }
+
         "AesGcm" => todo!(),
 
         _ => Err(format!("unsupported encryption algorithm: {algo}").into()),
