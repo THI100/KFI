@@ -45,3 +45,11 @@ Commands
   - What open does: Open a different vault at a command
   - Which arguments does it takes: 1 obrigatory argument, the vault name.
   - Dependency: a external file that is currently named store.toml for more information refer to commands_templates.
+
+  3. Add:
+  - What does: Adds untracked files into the snapshot system, and prepare them and their metadata to be saved.
+  - Which Arguments does it takes: obrigatory boolean of all files and a optional files destinations.
+  - Detailed walk through:
+    │
+  
+    │
