@@ -14,6 +14,8 @@ use aes::{
     Aes256,
     cipher::{Array, BlockCipherEncrypt, KeyInit},
 };
+use aes_gcm::Aes256Gcm;
+use aes_gcm::Nonce as aesnonce;
 use base64::{Engine, engine::general_purpose::STANDARD};
 use chacha20::ChaCha20;
 use chacha20::cipher::{KeyIvInit, StreamCipher};
@@ -104,12 +106,12 @@ pub fn encode_encryption(
     key: &str,
     outsize: &u32,
 ) -> Result<String, Errors> {
+    if key.as_bytes().len() != 32 {
+        return Err("Encode requires a 32-byte key".into());
+    }
+
     match algo {
         "Aes" => {
-            if key.as_bytes().len() != 32 {
-                return Err("AES-256 requires a 32-byte key".into());
-            }
-
             let cipher = Aes256::new_from_slice(key.as_bytes())?;
 
             // PKCS#7 padding to AES's 16-byte block size.
@@ -135,11 +137,6 @@ pub fn encode_encryption(
         }
 
         "ChaCha20" => {
-            // ChaCha20-256 requires a 32-byte key.
-            if key.as_bytes().len() != 32 {
-                return Err("ChaCha20-256 requires a 32-byte key".into());
-            }
-
             // IETF ChaCha20 uses a 12-byte nonce.
             let mut nonce = [0u8; 12];
             rand::rng().fill(&mut nonce);
@@ -164,10 +161,6 @@ pub fn encode_encryption(
         }
 
         "ChaCha20Poly1305" => {
-            if key.as_bytes().len() != 32 {
-                return Err("ChaCha20-256 requires a 32-byte key".into());
-            }
-
             let cipher = ChaCha20Poly1305::new_from_slice(key.as_bytes())
                 .map_err(|_| "invalid ChaCha20 key")?;
 
@@ -185,7 +178,23 @@ pub fn encode_encryption(
             Ok(STANDARD.encode(output))
         }
 
-        "AesGcm" => todo!(),
+        "AesGcm" => {
+            let cipher =
+                Aes256Gcm::new_from_slice(key.as_bytes()).map_err(|_| "invalid ChaCha20 key")?;
+
+            let nonce = aesnonce::generate(); // MUST be unique per message
+            let ciphertext = cipher.encrypt(&nonce, input.as_slice())?;
+
+            let mut output = Vec::with_capacity(nonce.len() + ciphertext.len());
+            output.extend_from_slice(&nonce);
+            output.extend_from_slice(&ciphertext);
+
+            if *outsize != 0 && output.len() as u32 != *outsize {
+                return Err("encrypted output size does not match outsize".into());
+            }
+
+            Ok(STANDARD.encode(output))
+        }
 
         _ => Err(format!("unsupported encryption algorithm: {algo}").into()),
     }
