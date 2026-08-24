@@ -51,7 +51,7 @@ Commands
   - Which Arguments does it takes: obrigatory boolean of all files and a optional files destinations.
   - Detailed walk through:
     1. It needs to verify the path (see if the file is existent), in case the all bool is allowed, check all the folder content. X
-    2. Check the ignored paths on .vaultbypass, and remove those from the path vector, note: The files tha were inserted optionally will ignore this part.
+    2. Check the ignored paths on .vaultbypass, and remove those from the path vector, note: The files tha were inserted optionally will ignore this part. X
     3. Create snapshots of all the files based on their paths.
     4. Hash (at 96 bits) the snapshot content and path to generate an blob name and store them into .vault/objects/blobs.
     5. Create an pseudo-save name based on the enviroment folder names, and a tree/folder sturcture copying the enviroment itself.
