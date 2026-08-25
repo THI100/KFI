@@ -64,5 +64,12 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
 
     // Continue here...
 
+    // Inside a for loop based on paths
+    // Snapshots of all files avaliable in the variable paths
+    // Hash the contents in 96x
+    // Add the hash as name for the snapshot made
+
+    // Open temp/unaudited_saves and start making the folder structure in paralel
+
     Ok(())
 }
