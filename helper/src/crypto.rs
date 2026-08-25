@@ -1,4 +1,7 @@
 use std::error::Error;
+use std::fs::File;
+use std::io::BufReader;
+use std::path::PathBuf;
 
 // Others \\
 use rand::RngExt;
@@ -47,7 +50,7 @@ fn to_hex(bytes: &[u8]) -> String {
     output
 }
 
-pub fn encode_hash(algo: &str, input: &str, outsize: &u32) -> Result<String, Errors> {
+pub fn encode_hash<T: AsRef<[u8]>>(algo: &str, input: T, outsize: &u32) -> Result<String, Errors> {
     let algo_v = if algo == "Sha3" && !matches!(*outsize, 224 | 256 | 384 | 512) {
         "Shake"
     } else {
@@ -59,7 +62,7 @@ pub fn encode_hash(algo: &str, input: &str, outsize: &u32) -> Result<String, Err
         .filter(|&size| size > 0 && *outsize % 8 == 0)
         .ok_or("Output size must be a positive multiple of 8.")?;
 
-    let binput = input.as_bytes();
+    let binput = input.as_ref();
 
     match algo_v {
         "Blake3" => {

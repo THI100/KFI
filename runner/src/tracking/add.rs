@@ -1,7 +1,8 @@
 use cli::models;
+use helper::crypto::encode_hash;
 use helper::read_store;
 use std::error::Error;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 use std::path::Path;
 use walkdir::WalkDir;
@@ -72,17 +73,22 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
     // Open temp/unaudited_saves and start making the folder structure in paralel
 
     for origin in paths {
-        let temp_snapshot_path = "snapshot.tmp";
+        if !origin.is_file() {
+            continue;
+        }
+
+        let temp_dir = alive.join(".vault/temp/unaudited_saves");
+        fs::create_dir_all(&temp_dir)?;
+        let temp_snapshot_path = temp_dir.join("snap.tmp");
 
         let src_file = File::open(origin)?;
         let mut reader = BufReader::new(src_file);
 
-        let dest_file = File::create(temp_snapshot_path)?;
+        let dest_file = File::create(&temp_snapshot_path)?;
         let mut writer = BufWriter::new(dest_file);
 
-        // Hashing is here
-
         let mut buffer = [0; 8192];
+        let mut snapshot = Vec::new();
 
         loop {
             let bytes_read = reader.read(&mut buffer)?;
@@ -91,19 +97,16 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
             }
 
             writer.write_all(&buffer[..bytes_read])?;
-
-            // Needs for a update
-            hasher.update(&buffer[..bytes_read]);
-
-            let hash_result = hasher.finalize();
-            let crypto_name = format!("{:x}.bin", hash_result);
-
-            // 2. Rename the temporary file to its final cryptographic name
-            fs::rename(temp_snapshot_path, &crypto_name)?;
+            snapshot.extend_from_slice(&buffer[..bytes_read]);
         }
 
-        // 5. Ensure all remaining buffered bytes are fully written to disk
         writer.flush()?;
+
+        let hash = encode_hash("Blake3", &snapshot, &96)?;
+        let snapshot_path = temp_dir.join(format!("{hash}.bin"));
+
+        // Rename the completed temporary snapshot to its cryptographic name.
+        fs::rename(temp_snapshot_path, snapshot_path)?;
     }
 
     Ok(())
