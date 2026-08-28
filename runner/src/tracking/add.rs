@@ -66,8 +66,6 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
         }
     }
 
-    // Loop 1 (Hashing and naming, missing sled db integration)
-
     let temp_dir = alive.join(".vault/objects/blobs");
     if !temp_dir.is_dir() {
         return Err("The blob directory does not exist!".into());
@@ -84,6 +82,8 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
 
     let (sender, receiver) = mpsc::channel::<Result<(std::path::PathBuf, String), String>>();
     let producer = sender.clone();
+
+    // Loop 1 (Hashing and naming, missing sled db integration)
 
     let (hash_result, write_result) = rayon::join(
         || -> Result<(), String> {
