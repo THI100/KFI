@@ -1,11 +1,14 @@
 use cli::models;
-use helper::crypto::encode_hash;
 use helper::read_store;
+use helper::{crypto::encode_hash, get_safety_config};
 use std::error::Error;
 use std::fs::{self, File};
 use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 use std::path::Path;
+use std::primitive;
 use walkdir::WalkDir;
+
+use crate::safety;
 
 type Errors = Box<dyn Error>;
 
@@ -77,7 +80,7 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
             continue;
         }
 
-        let temp_dir = alive.join(".vault/temp/unaudited_saves");
+        let temp_dir = alive.join(".vault/objects/blobs");
         fs::create_dir_all(&temp_dir)?;
         let temp_snapshot_path = temp_dir.join("snap.tmp");
 
@@ -102,7 +105,10 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
 
         writer.flush()?;
 
-        let hash = encode_hash("Blake3", &snapshot, &96)?;
+        let safety = get_safety_config(&alive)?;
+        let primitive: &str = &safety.0;
+
+        let hash = encode_hash(primitive, &snapshot, &128)?;
         let snapshot_path = temp_dir.join(format!("{hash}.bin"));
 
         // Rename the completed temporary snapshot to its cryptographic name.
