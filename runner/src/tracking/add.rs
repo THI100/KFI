@@ -1,14 +1,12 @@
 use cli::models;
 use helper::read_store;
 use helper::{crypto::encode_hash, get_safety_config};
+use std::collections::HashSet;
 use std::error::Error;
 use std::fs::{self, File};
 use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 use std::path::Path;
-use std::primitive;
 use walkdir::WalkDir;
-
-use crate::safety;
 
 type Errors = Box<dyn Error>;
 
@@ -66,22 +64,17 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
         }
     }
 
-    // Continue here...
+    // Loop 1 (Hashing and naming, missing sled db integration)
 
-    // Inside a for loop based on paths
-    // Snapshots of all files avaliable in the variable paths
-    // Hash the contents in 96x
-    // Add the hash as name for the snapshot made
-
-    // Open temp/unaudited_saves and start making the folder structure in paralel
-
-    for origin in paths {
+    for origin in &paths {
         if !origin.is_file() {
             continue;
         }
 
         let temp_dir = alive.join(".vault/objects/blobs");
-        fs::create_dir_all(&temp_dir)?;
+        if !temp_dir.is_dir() {
+            return Err("The blob directory does not exist!".into());
+        }
         let temp_snapshot_path = temp_dir.join("snap.tmp");
 
         let src_file = File::open(origin)?;
@@ -114,6 +107,38 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
         // Rename the completed temporary snapshot to its cryptographic name.
         fs::rename(temp_snapshot_path, snapshot_path)?;
     }
+
+    // Loop 2 (FOlder structure)
+
+    let saves_dir = alive.join(".vault/temp/unaudited_saves");
+    if !saves_dir.is_dir() {
+        return Err("The unaudited saves directory does not exist!".into());
+    }
+
+    let tmp_save_dir = saves_dir.join("tmp");
+    fs::create_dir_all(&tmp_save_dir)?;
+
+    let mut created_dirs = HashSet::new();
+
+    for folder in paths {
+        if !folder.is_file() {
+            continue;
+        }
+
+        let relative = folder.strip_prefix(&alive)?;
+        let relative_parent = relative.parent().unwrap_or(Path::new(""));
+        let destination = tmp_save_dir.join(relative_parent);
+
+        if created_dirs.insert(destination.clone()) {
+            fs::create_dir_all(&destination)?;
+
+            let source_file = destination.join("source");
+            let mut source = File::create(source_file)?;
+            source.write_all(b"0,\n")?;
+        }
+    }
+
+    // Loop 1 and 2 are missing an mscp channel for transmission of the hash values and parallelism
 
     Ok(())
 }
