@@ -66,47 +66,66 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
 
     // Loop 1 (Hashing and naming, missing sled db integration)
 
-    for origin in &paths {
-        if !origin.is_file() {
-            continue;
-        }
+    let temp_dir = alive.join(".vault/objects/blobs");
+    if !temp_dir.is_dir() {
+        return Err("The blob directory does not exist!".into());
+    }
+    let safety = get_safety_config(&alive)?;
+    let primitive = safety.0;
 
-        let temp_dir = alive.join(".vault/objects/blobs");
-        if !temp_dir.is_dir() {
-            return Err("The blob directory does not exist!".into());
-        }
-        let temp_snapshot_path = temp_dir.join("snap.tmp");
+    std::thread::scope(|scope| -> Result<(), Errors> {
+        let mut workers = Vec::new();
 
-        let src_file = File::open(origin)?;
-        let mut reader = BufReader::new(src_file);
-
-        let dest_file = File::create(&temp_snapshot_path)?;
-        let mut writer = BufWriter::new(dest_file);
-
-        let mut buffer = [0; 8192];
-        let mut snapshot = Vec::new();
-
-        loop {
-            let bytes_read = reader.read(&mut buffer)?;
-            if bytes_read == 0 {
-                break;
+        for (thread_number, origin) in paths.iter().enumerate() {
+            if !origin.is_file() {
+                continue;
             }
 
-            writer.write_all(&buffer[..bytes_read])?;
-            snapshot.extend_from_slice(&buffer[..bytes_read]);
+            let temp_dir = &temp_dir;
+            let primitive = &primitive;
+            workers.push(scope.spawn(move || -> Result<(), String> {
+                let temp_snapshot_path =
+                    temp_dir.join(format!("snap_t_{thread_number}.tmp"));
+                let snapshot_path = {
+                    let src_file = File::open(origin).map_err(|error| error.to_string())?;
+                    let mut reader = BufReader::new(src_file);
+                    let dest_file =
+                        File::create(&temp_snapshot_path).map_err(|error| error.to_string())?;
+                    let mut writer = BufWriter::new(dest_file);
+                    let mut buffer = [0; 8192];
+                    let mut snapshot = Vec::new();
+
+                    loop {
+                        let bytes_read = reader.read(&mut buffer).map_err(|error| error.to_string())?;
+                        if bytes_read == 0 {
+                            break;
+                        }
+                        writer
+                            .write_all(&buffer[..bytes_read])
+                            .map_err(|error| error.to_string())?;
+                        snapshot.extend_from_slice(&buffer[..bytes_read]);
+                    }
+
+                    writer.flush().map_err(|error| error.to_string())?;
+                    let hash = encode_hash(primitive, &snapshot, &128)
+                        .map_err(|error| error.to_string())?;
+                    temp_dir.join(format!("{hash}.bin"))
+                };
+
+                fs::rename(&temp_snapshot_path, snapshot_path)
+                    .map_err(|error| error.to_string())?;
+                Ok(())
+            }));
         }
 
-        writer.flush()?;
-
-        let safety = get_safety_config(&alive)?;
-        let primitive: &str = &safety.0;
-
-        let hash = encode_hash(primitive, &snapshot, &128)?;
-        let snapshot_path = temp_dir.join(format!("{hash}.bin"));
-
-        // Rename the completed temporary snapshot to its cryptographic name.
-        fs::rename(temp_snapshot_path, snapshot_path)?;
-    }
+        for worker in workers {
+            worker
+                .join()
+                .map_err(|_| "Snapshot worker thread panicked".to_string())?
+                .map_err(|error| -> Errors { error.into() })?;
+        }
+        Ok(())
+    })?;
 
     // Loop 2 (FOlder structure)
 
