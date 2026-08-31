@@ -120,6 +120,13 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
                             .map_err(|error| error.to_string())?;
                         let snapshot_path = temp_dir.join(format!("{hash}.bin"));
 
+                        // Add sled integration here:
+                        // What to do: 1. Open the sled DB, 2. Save the key (variable hash), Save the value (variable snapshot_path)
+                        // 3. Have a error collector to delete and abort the DB addition
+                        //
+                        // Why: the DB is located here, if an error happens
+                        // the program doesnt rename the temp_snapshot to the definitive naming
+
                         fs::rename(&temp_snapshot_path, snapshot_path)
                             .map_err(|error| error.to_string())?;
                         producer
@@ -164,5 +171,5 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
     hash_result.map_err(|error| -> Errors { error.into() })?;
     write_result.map_err(|error| -> Errors { error.into() })?;
 
-    Ok(())
+    Ok((b"Added the following files succe"))
 }

@@ -61,7 +61,10 @@ fn main() {
         let input = args.join(" ");
 
         match cli::parse(&input) {
-            Ok(command) => runner::dispatch(command),
+            Ok(command) => {
+                let message = runner::dispatch(command);
+                println!("{message}");
+            }
             Err(err) => eprintln!("Error: {err}"),
         }
 
@@ -96,7 +99,10 @@ fn main() {
         }
 
         match cli::parse(line) {
-            Ok(command) => runner::dispatch(command),
+            Ok(command) => {
+                let message = runner::dispatch(command);
+                println!("{message}");
+            }
             Err(err) => eprintln!("Error: {err}"),
         }
     }

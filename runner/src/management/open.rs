@@ -5,7 +5,7 @@ use std::path::Path;
 
 type Errors = Box<dyn Error>;
 
-pub fn run(args: models::OpenArgs) -> Result<(), Errors> {
+pub fn run(args: models::OpenArgs) -> Result<String, Errors> {
     let store_path = Path::new("extdata/store.toml");
     let contents = fs::read_to_string(store_path)?;
     let mut store = contents.parse::<toml_edit::DocumentMut>()?;
@@ -25,8 +25,8 @@ pub fn run(args: models::OpenArgs) -> Result<(), Errors> {
         .into());
     }
 
-    store["active"] = toml_edit::value(args.vault);
+    store["active"] = toml_edit::value(&args.vault);
 
     fs::write(store_path, store.to_string())?;
-    Ok(())
+    Ok(format!("succefully opened the vault: {}", args.vault).to_string())
 }

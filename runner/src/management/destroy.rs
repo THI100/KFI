@@ -3,7 +3,7 @@ use std::error::Error;
 
 type Errors = Box<dyn Error>;
 
-pub fn run(args: models::DesArgs) -> Result<(), Errors> {
+pub fn run(args: models::DesArgs) -> Result<String, Errors> {
     return Err(format!(
         "Work in progress, but this is the command and arguments: Destroy: {args:#?}"
     )

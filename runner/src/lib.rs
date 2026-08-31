@@ -4,8 +4,9 @@ mod management;
 mod safety;
 mod saving;
 mod tracking;
+use std::error::Error;
 
-pub fn dispatch(command: Commands) {
+pub fn dispatch(command: Commands) -> Result<String, Box<dyn Error>> {
     let result = match command {
         // Vault Management \\
         Commands::Init(args) => management::init::run(args),

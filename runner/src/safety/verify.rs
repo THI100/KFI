@@ -3,7 +3,7 @@ use std::error::Error;
 
 type Errors = Box<dyn Error>;
 
-pub fn run(args: models::VeriArgs) -> Result<(), Errors> {
+pub fn run(args: models::VeriArgs) -> Result<String, Errors> {
     return Err(format!(
         "Work in progress, but this is the command and arguments: Verify: {args:#?}"
     )

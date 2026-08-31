@@ -52,10 +52,10 @@ Commands
   - Detailed walk through:
     1. It needs to verify the path (see if the file is existent), in case the all bool is allowed, check all the folder content. X
     2. Check the ignored paths on .vaultbypass, and remove those from the path vector, note: The files tha were inserted optionally will ignore this part. X
-    3. Create snapshots of all the files based on their paths.
-    4. Hash (at 96 bits) the snapshot content to generate an blob name and store them into .vault/objects/blobs.
-    5. Create an pseudo-save name based on the enviroment folder names, and a tree/folder sturcture copying the enviroment itself.
-    6. Add the blob references into the pseudo-save.
-    7. Save the pseudo-save in ./vault/temp/unaudited_saves.
-    8. Create and Update an REFER file inside the temp/unaudited_saves.
-    9. Output the message of success or error.
+    3. Create snapshots of all the files based on their paths. X
+    4. Hash (at 96 bits) the snapshot content to generate an blob name and store them into .vault/objects/blobs. X
+    5. Create an pseudo-save name based on the enviroment folder names, and a tree/folder sturcture copying the enviroment itself. X
+    6. Add the blob references into the pseudo-save. X
+    7. Save the pseudo-save in ./vault/temp/unaudited_saves. X
+    8. Sled integration for loop 1. Wait
+    9. Output the message of success or error. Wait
