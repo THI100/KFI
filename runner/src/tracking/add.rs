@@ -111,6 +111,16 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
                         let mut buffer = [0; 8192];
                         let mut snapshot = Vec::new();
 
+                        // Store the original file name as the first line of the snapshot.
+                        let original_name = origin
+                            .file_name()
+                            .ok_or_else(|| "the source path has no file name".to_string())?;
+                        let header = format!("{}\n\n", original_name.to_string_lossy());
+                        writer
+                            .write_all(header.as_bytes())
+                            .map_err(|error| error.to_string())?;
+                        snapshot.extend_from_slice(header.as_bytes());
+
                         loop {
                             let bytes_read = reader
                                 .read(&mut buffer)
