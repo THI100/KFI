@@ -59,3 +59,8 @@ Commands
     7. Save the pseudo-save in ./vault/temp/unaudited_saves. X
     8. Sled integration for loop 1. X
     9. Output the message of success or error. X
+
+4. Remove:
+  - What does: Removes files from the snapshot system.
+  - Which arguments: files, a list of paths.
+  - Walk through:
