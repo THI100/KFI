@@ -85,6 +85,10 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
 
     let (sender, receiver) = mpsc::channel::<Result<(std::path::PathBuf, String), String>>();
     let producer = sender.clone();
+    // Loop 2 must be able to observe channel closure after Loop 1 finishes.
+    // Keep only the producer clone used by Loop 1; otherwise `receiver` waits
+    // forever because this original sender remains alive until the end of run.
+    drop(sender);
 
     // Loop 1 (Hashing and naming, missing sled db integration)
 
