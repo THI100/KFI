@@ -62,8 +62,7 @@ fn main() {
 
         match cli::parse(&input) {
             Ok(command) => {
-                let message = runner::dispatch(command);
-                println!("{message}");
+                runner::dispatch(command);
             }
             Err(err) => eprintln!("Error: {err}"),
         }
@@ -100,8 +99,7 @@ fn main() {
 
         match cli::parse(line) {
             Ok(command) => {
-                let message = runner::dispatch(command);
-                println!("{message}");
+                runner::dispatch(command);
             }
             Err(err) => eprintln!("Error: {err}"),
         }
