@@ -7,12 +7,12 @@ use std::error::Error;
 use std::fs::{self, File};
 use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 use std::path::Path;
-use std::sync::mpsc;
+use std::sync::{Arc, Mutex, mpsc};
 use walkdir::WalkDir;
 
 type Errors = Box<dyn Error>;
 
-pub fn run(args: models::AddArgs) -> Result<(), Errors> {
+pub fn run(args: models::AddArgs) -> Result<String, Errors> {
     let alive = read_store()?;
     let mut paths = Vec::new();
 
@@ -80,6 +80,9 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
     let tmp_save_dir = saves_dir.join("tmp");
     fs::create_dir_all(&tmp_save_dir)?;
 
+    let db = sled::open(alive.join(".vault/index"))?;
+    let inserted_hashes = Arc::new(Mutex::new(Vec::<Vec<u8>>::new()));
+
     let (sender, receiver) = mpsc::channel::<Result<(std::path::PathBuf, String), String>>();
     let producer = sender.clone();
 
@@ -87,6 +90,8 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
 
     let (hash_result, write_result) = rayon::join(
         || -> Result<(), String> {
+            let db = db.clone();
+            let inserted_hashes = Arc::clone(&inserted_hashes);
             let result = paths
                 .par_iter()
                 .enumerate()
@@ -120,12 +125,15 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
                             .map_err(|error| error.to_string())?;
                         let snapshot_path = temp_dir.join(format!("{hash}.bin"));
 
-                        // Add sled integration here:
-                        // What to do: 1. Open the sled DB, 2. Save the key (variable hash), Save the value (variable snapshot_path)
-                        // 3. Have a error collector to delete and abort the DB addition
-                        //
-                        // Why: the DB is located here, if an error happens
-                        // the program doesnt rename the temp_snapshot to the definitive naming
+                        // Index the snapshot before publishing its final name. If any
+                        // worker fails, all inserted keys are removed below.
+                        let key = hash.as_bytes().to_vec();
+                        db.insert(&key, snapshot_path.to_string_lossy().as_bytes())
+                            .map_err(|error| error.to_string())?;
+                        inserted_hashes
+                            .lock()
+                            .map_err(|error| error.to_string())?
+                            .push(key);
 
                         fs::rename(&temp_snapshot_path, snapshot_path)
                             .map_err(|error| error.to_string())?;
@@ -168,8 +176,28 @@ pub fn run(args: models::AddArgs) -> Result<(), Errors> {
         },
     );
 
-    hash_result.map_err(|error| -> Errors { error.into() })?;
+    if let Err(error) = hash_result {
+        if let Ok(keys) = inserted_hashes.lock() {
+            for key in keys.iter() {
+                let _ = db.remove(key);
+            }
+            let _ = db.flush();
+        }
+        return Err(error.into());
+    }
+    db.flush()?;
     write_result.map_err(|error| -> Errors { error.into() })?;
 
-    Ok((b"Added the following files succe"))
+    let paths_str = paths
+        .iter()
+        .map(|p| p.display().to_string())
+        .collect::<Vec<_>>()
+        .join(", ");
+
+    let message = format!(
+        "successfully added the following files to the active vault: {}",
+        paths_str
+    );
+
+    Ok(message)
 }
