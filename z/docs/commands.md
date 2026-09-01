@@ -57,5 +57,5 @@ Commands
     5. Create an pseudo-save name based on the enviroment folder names, and a tree/folder sturcture copying the enviroment itself. X
     6. Add the blob references into the pseudo-save. X
     7. Save the pseudo-save in ./vault/temp/unaudited_saves. X
-    8. Sled integration for loop 1. Wait
-    9. Output the message of success or error. Wait
+    8. Sled integration for loop 1. X
+    9. Output the message of success or error. X

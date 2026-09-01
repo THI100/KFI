@@ -3,8 +3,8 @@
 0.1:
   - Init: Concluded
   - Open: Concluded
-  - Add: under Development
-  - Remove
+  - Add: Testing
+  - Remove: Under development
   - Status
   - Save
   - Log

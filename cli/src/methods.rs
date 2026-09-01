@@ -78,7 +78,7 @@ pub fn parse_add(mut parts: Tokens<'_>) -> Result<models::Commands, String> {
 
     while let Some(arg) = parts.next() {
         match arg {
-            "--all" | "-a" => all = true,
+            "--all" | "-a" | "." => all = true,
             file => files.push(PathBuf::from(file)),
         }
     }

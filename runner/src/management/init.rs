@@ -45,7 +45,7 @@ struct VaultInfo {
     format: u8,
 }
 
-pub fn run(args: models::InitArgs) -> Result<String, Errors> {
+pub fn run(args: models::InitArgs) -> Result<(), Errors> {
     let location = args.location;
     let vault_path = location.join(".vault");
     let bypass_path = location.join(".vaultbypass");
@@ -65,7 +65,7 @@ pub fn run(args: models::InitArgs) -> Result<String, Errors> {
         }
         false
     } else {
-        write_new(&bypass_path, b".vault/\n")?;
+        write_new(&bypass_path, b"/.vault\n")?;
         true
     };
 
@@ -140,7 +140,7 @@ pub fn run(args: models::InitArgs) -> Result<String, Errors> {
         );
     }
 
-    Ok(format!("succefully initialized the vault: {}", args.vault).to_string())
+    Ok(())
 }
 
 fn write_new(path: &Path, data: &[u8]) -> Result<(), Errors> {

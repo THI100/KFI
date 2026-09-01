@@ -12,7 +12,7 @@ use walkdir::WalkDir;
 
 type Errors = Box<dyn Error>;
 
-pub fn run(args: models::AddArgs) -> Result<String, Errors> {
+pub fn run(args: models::AddArgs) -> Result<(), Errors> {
     let alive = read_store()?;
     let mut paths = Vec::new();
 
@@ -194,10 +194,10 @@ pub fn run(args: models::AddArgs) -> Result<String, Errors> {
         .collect::<Vec<_>>()
         .join(", ");
 
-    let message = format!(
+    println!(
         "successfully added the following files to the active vault: {}",
         paths_str
     );
 
-    Ok(message)
+    Ok(())
 }
